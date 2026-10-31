@@ -28,6 +28,7 @@ Players need transparent guidance on farm profitability and market prices withou
 
 ## Tasks
 - [x] FPC-1 — Establish the Vite TypeScript workspace and pure calculation core with tests. Route: delegated; writer trigger (multiple non-trivial files).
+- [x] FPC-1R — Correct reviewed profitability calculation reliability findings before FPC-2. Route: delegated; writer trigger (domain, application, and tests).
 - [ ] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
 - [ ] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
 
@@ -39,7 +40,10 @@ Players need transparent guidance on farm profitability and market prices withou
 
 ## Progress
 - 2026-10-30: Planning artifacts completed under `openspec/changes/farm-profitability-calculator/`.
-- Next: initialize local Git repository and feature-chain branches, then implement FPC-1.
+- 2026-10-30: FPC-1 committed as `cbef738 feat(core): add profitability calculation foundation` and checks passed.
+- 2026-10-30: Native review `review-cf37f71213471fb2` was acknowledged with three informational reliability findings; FPC-1R records their required correction before FPC-2.
+- 2026-10-30: FPC-1R completed; payback, daily-cap handling, and comparable ranking are corrected and regression-tested.
+- Next: implement FPC-2.
 
 ## Work Unit Evidence
 
@@ -48,3 +52,10 @@ Players need transparent guidance on farm profitability and market prices withou
 - Runtime harness: `bun run build` — passed; Vite production PWA build completed.
 - Rollback boundary: workspace configuration plus `src/domain/`, `src/application/`, and test fixtures/tests.
 - TDD note: strict TDD is disabled; tests and implementation were completed with functional verification.
+- Review receipt: `review-cf37f71213471fb2` acknowledged; advisory findings R3-001 through R3-003 are tracked as FPC-1R.
+
+### FPC-1R — Reliability corrections
+- Focused check: `bun run test -- --run src/domain src/application` — passed (3 files, 13 tests).
+- Runtime harness: `bun run build` — passed; Vite production PWA build completed.
+- Type check: `bun run typecheck` — passed.
+- Rollback boundary: `src/domain/profitability/`, `src/application/use-cases/`, and their focused tests.

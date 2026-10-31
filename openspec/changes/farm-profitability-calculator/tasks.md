@@ -36,6 +36,12 @@ Chain strategy: feature-branch-chain
 - [x] 1.8 Implement `src/application/use-cases/AnalyzeFarmProfitability.ts` and `src/application/use-cases/CreateMarketGuidance.ts` to rank eligible scenarios and return unavailable cases plus disclosures.
 - [x] 1.9 Refactor the core modules after GREEN while preserving test coverage and ensuring every recommendation retains formula inputs, timeframe, fees, and non-guarantee limitations.
 
+## Review Follow-ups: Calculation Reliability (must complete before Phase 2)
+
+- [x] 1.10 Add regression tests and correct `src/domain/profitability/ProfitabilityPolicy.ts` so payback uses net profit rather than net value and is unavailable when net profit is zero or negative.
+- [x] 1.11 Add regression tests and update `src/application/use-cases/AnalyzeFarmProfitability.ts` so daily earning capacity limits affected scenarios or explicitly discloses the limitation.
+- [x] 1.12 Add regression tests and update `src/application/use-cases/AnalyzeFarmProfitability.ts` so ranking uses a declared comparable metric and timeframe.
+
 ## Phase 2: Safe Data Adapters
 
 - [ ] 2.1 Write RED adapter tests for `src/adapters/import/JsonFarmSnapshotImporter.ts`: valid browser-local JSON import, malformed JSON rejection, unsupported versions, missing analysis fields, and credential-shaped field exclusion from normalized output and diagnostics.

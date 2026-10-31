@@ -77,6 +77,6 @@ export function calculateProfitability(input: ProfitabilityInput): Profitability
     roi: totalCost === 0 ? undefined : netProfit / totalCost,
     energyEfficiency: energyCost === 0 ? undefined : netProfit / energyCost,
     hourlyProfit: durationHours === 0 ? undefined : netProfit / durationHours,
-    paybackHours: sale.netValue <= 0 || durationHours === 0 ? undefined : (totalCost / sale.netValue) * durationHours,
+    paybackHours: netProfit <= 0 || durationHours === 0 ? undefined : (totalCost / netProfit) * durationHours,
   });
 }

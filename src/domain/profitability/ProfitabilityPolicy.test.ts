@@ -17,7 +17,7 @@ describe('ProfitabilityPolicy', () => {
     expect(result.roi).toBe(1.375);
     expect(result.energyEfficiency).toBe(11);
     expect(result.hourlyProfit).toBe(27.5);
-    expect(result.paybackHours).toBeCloseTo(1.6842, 4);
+    expect(result.paybackHours).toBeCloseTo(2.9091, 4);
   });
 
   it('does not invent ratios when required denominators are zero', () => {
@@ -26,6 +26,13 @@ describe('ProfitabilityPolicy', () => {
     expect(result.roi).toBeUndefined();
     expect(result.energyEfficiency).toBeUndefined();
     expect(result.hourlyProfit).toBeUndefined();
+  });
+
+  it('does not report payback for a non-profitable scenario', () => {
+    const result = calculateProfitability({ grossValue: 50, directCost: 60, durationHours: 4, energyCost: 2 });
+
+    expect(result.netProfit).toBe(-10);
+    expect(result.paybackHours).toBeUndefined();
   });
 
   it('rejects invalid costs and fees', () => {

@@ -22,6 +22,32 @@ describe('profitability use cases', () => {
     expect(analysis.disclosures.join(' ')).toContain('manually');
   });
 
+  it('ranks scenarios by effective hourly net profit and discloses a daily cap', () => {
+    const analysis = analyzeFarmProfitability({
+      snapshot: createFarmSnapshot({ ...supportedFarmSnapshot, dailyEarningLimit: 18, dailyEarnings: 15 }),
+      scenarios: [
+        { id: 'slow', label: 'Slow', requiredLevel: 1, timeframe: '24h', assumptions: [], input: { grossValue: 100, directCost: 0, durationHours: 24, energyCost: 1 } },
+        { id: 'fast', label: 'Fast', requiredLevel: 1, timeframe: '1h', assumptions: [], input: { grossValue: 10, directCost: 0, durationHours: 1, energyCost: 1 } },
+      ],
+    });
+
+    expect(analysis.scenarios.map((scenario) => scenario.id)).toEqual(['fast', 'slow']);
+    expect(analysis.scenarios[1]?.ranking).toMatchObject({ metric: 'effective-hourly-net-profit', effectiveNetProfit: 3 });
+    expect(analysis.scenarios[1]?.limitations.join(' ')).toContain('Daily earning capacity limits');
+  });
+
+  it('marks earning scenarios unavailable after the daily capacity is reached', () => {
+    const analysis = analyzeFarmProfitability({
+      snapshot: createFarmSnapshot({ ...supportedFarmSnapshot, dailyEarningLimit: 18, dailyEarnings: 18 }),
+      scenarios: [
+        { id: 'egg', label: 'Egg', requiredLevel: 1, timeframe: '1h', assumptions: [], input: { grossValue: 10, directCost: 0, durationHours: 1, energyCost: 1 } },
+      ],
+    });
+
+    expect(analysis.scenarios).toHaveLength(0);
+    expect(analysis.unavailableScenarios[0]?.reason).toContain('Daily earning capacity');
+  });
+
   it('returns fee-aware guidance without game actions', () => {
     const guidance = createMarketGuidance({ item: 'oil', baselineValue: 10, sellerFeeRate: 0.05, targetMultiplier: 1.2 });
 
