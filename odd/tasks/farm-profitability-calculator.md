@@ -59,3 +59,4 @@ Players need transparent guidance on farm profitability and market prices withou
 - Runtime harness: `bun run build` — passed; Vite production PWA build completed.
 - Type check: `bun run typecheck` — passed.
 - Rollback boundary: `src/domain/profitability/`, `src/application/use-cases/`, and their focused tests.
+- Review assessment: medium risk, under budget (93 authored changed lines from `cbef738`); deferred within the current review slice.
