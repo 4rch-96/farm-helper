@@ -1,0 +1,41 @@
+# SDD bootstrap for farm-helper
+schema: spec-driven
+
+context: |
+  Project: farm-helper
+  Status: greenfield workspace; no implementation projects detected.
+  Product direction: advisory analytics for Farming Season; must not automate gameplay.
+  Architecture: to be decided during exploration; user requests hexagonal architecture, DDD, SOLID, and scalable design.
+  Testing: no workspace-wide runner exists yet.
+
+strict_tdd: false
+projects: []
+testing:
+  workspace_test_command: ""
+  reason: "No in-scope project roots or workspace-level test command were detected."
+  capabilities:
+    projects: []
+
+rules:
+  proposal:
+    - Define product boundaries and explicitly exclude gameplay automation.
+    - Identify wallet, account-data, and market-data trust boundaries.
+  specs:
+    - Use Given/When/Then scenarios and RFC 2119 keywords.
+  design:
+    - Evaluate web-first versus native mobile after API and wallet-connect research.
+    - Preserve ports-and-adapters boundaries around external game, wallet, and market providers.
+  tasks:
+    - Keep tasks independently verifiable and scoped to one session where practical.
+  apply:
+    guidelines:
+      - Do not implement bots or control game actions.
+      - Follow hexagonal architecture, DDD, SOLID, and established project conventions.
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
