@@ -85,3 +85,4 @@ Players need transparent guidance on farm profitability and market prices withou
 - Full verification: `bun run test` — passed (7 files, 27 tests); `bun run typecheck` and `bun run build` — passed.
 - Runtime harness: production PWA build completed. `bun run e2e` was attempted but unavailable because the Playwright Chromium binary is not locally installed; no browser download was authorized.
 - Rollback boundary: `src/presentation/`, `src/main.tsx`, `src/vite-env.d.ts`, and `playwright.config.ts`.
+- Review assessment: medium risk, `under_budget` (252 authored changed lines from `d525a27`); review remains pending within the current slice.
