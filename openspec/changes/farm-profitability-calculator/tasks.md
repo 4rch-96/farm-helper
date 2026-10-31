@@ -57,12 +57,12 @@ Chain strategy: feature-branch-chain
 
 ## Phase 3: Responsive PWA and Guidance UI
 
-- [ ] 3.1 Create `src/presentation/features/calculator/` with a local file/paste import interface, validation feedback, snapshot freshness display, and a clear advisory-only boundary.
-- [ ] 3.2 Create ranking and result-detail components that render ROI, energy efficiency, payback, unavailable scenarios, source values, fees, assumptions, timestamps, and the non-guarantee disclaimer.
-- [ ] 3.3 Create market-guidance components that provide baseline sell/hold guidance and explicitly state that live player-market listings and liquidity are unavailable until a permitted public source is verified.
-- [ ] 3.4 Write React Testing Library tests for import failures, credential warning redaction, missing-input states, stale public context, fee disclosure, and the absence of game-action controls.
-- [ ] 3.5 Configure PWA metadata and offline shell behavior without caching imported farm snapshots or authenticated game responses.
-- [ ] 3.6 Write `e2e/calculator.spec.ts` for a sanitized snapshot import that reaches ranked recommendations and market guidance with disclosures.
+- [x] 3.1 Create `src/presentation/features/calculator/` with a local file/paste import interface, validation feedback, snapshot freshness display, and a clear advisory-only boundary.
+- [x] 3.2 Create ranking and result-detail components that render ROI, energy efficiency, payback, unavailable scenarios, source values, fees, assumptions, timestamps, and the non-guarantee disclaimer.
+- [x] 3.3 Create market-guidance components that provide baseline sell/hold guidance and explicitly state that live player-market listings and liquidity are unavailable until a permitted public source is verified.
+- [x] 3.4 Write React Testing Library tests for import failures, credential warning redaction, missing-input states, stale public context, fee disclosure, and the absence of game-action controls.
+- [x] 3.5 Configure PWA metadata and offline shell behavior without caching imported farm snapshots or authenticated game responses.
+- [x] 3.6 Write `e2e/calculator.spec.ts` for a sanitized snapshot import that reaches ranked recommendations and market guidance with disclosures.
 
 ## Phase 4: Verification and Documentation
 

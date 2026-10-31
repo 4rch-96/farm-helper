@@ -31,7 +31,7 @@ Players need transparent guidance on farm profitability and market prices withou
 - [x] FPC-1R — Correct reviewed profitability calculation reliability findings before FPC-2. Route: delegated; writer trigger (domain, application, and tests).
 - [x] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
 - [x] FPC-2R — Correct reviewed adapter reliability findings before FPC-3. Route: delegated; writer trigger (adapter code and tests).
-- [ ] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
+- [x] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
 
 ## Acceptance Criteria
 - Recommendations state formulas, fees, timestamps, inputs, and uncertainty.
@@ -47,7 +47,8 @@ Players need transparent guidance on farm profitability and market prices withou
 - 2026-10-30: FPC-2 completed with browser-local snapshot normalization and anonymous public-context fallback checks.
 - 2026-10-30: Native review `review-6269c0943ee3f5ab` was acknowledged with two informational adapter reliability findings; FPC-2R records their required correction before FPC-3.
 - 2026-10-30: FPC-2R completed; client retrieval time and source update time are distinct, and credential-shaped fields are detected broadly without exposing values.
-- Next: implement FPC-3.
+- 2026-10-30: FPC-3 completed with a local pixel-art calculator workspace, React UI tests, and an authored Playwright journey.
+- Next: run the remaining Phase 4 verification/documentation tasks; Playwright browser binary is not installed and was not downloaded.
 
 ## Work Unit Evidence
 
@@ -77,3 +78,10 @@ Players need transparent guidance on farm profitability and market prices withou
 - Type check: `bun run typecheck` — passed.
 - Runtime harness: `bun run build` — passed; Vite production PWA build completed.
 - Rollback boundary: `src/adapters/http/`, `src/adapters/import/`, and their focused tests.
+
+
+### FPC-3 — Pixel-art PWA UI
+- Focused check: `bun run test -- --run src/presentation` — passed (1 file, 2 tests).
+- Full verification: `bun run test` — passed (7 files, 27 tests); `bun run typecheck` and `bun run build` — passed.
+- Runtime harness: production PWA build completed. `bun run e2e` was attempted but unavailable because the Playwright Chromium binary is not locally installed; no browser download was authorized.
+- Rollback boundary: `src/presentation/`, `src/main.tsx`, `src/vite-env.d.ts`, and `playwright.config.ts`.
