@@ -44,11 +44,11 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2: Safe Data Adapters
 
-- [ ] 2.1 Write RED adapter tests for `src/adapters/import/JsonFarmSnapshotImporter.ts`: valid browser-local JSON import, malformed JSON rejection, unsupported versions, missing analysis fields, and credential-shaped field exclusion from normalized output and diagnostics.
-- [ ] 2.2 Implement `src/adapters/import/JsonFarmSnapshotImporter.ts` with schema validation and normalization; it MUST NOT transmit, persist, log, or replay `fs_session`, cookies, private keys, seed phrases, or credential-shaped fields.
-- [ ] 2.3 Write RED adapter tests for `src/adapters/http/FarmingSeasonPublicContextClient.ts` covering valid anonymous payloads, timeout, authentication challenge, invalid payload, stale data, and calculator-only fallback.
-- [ ] 2.4 Implement `src/adapters/http/FarmingSeasonPublicContextClient.ts` as an optional, read-only client for verified anonymous RWA/chain context; it MUST attach no game-session credential and MUST disable authentication-requiring sources.
-- [ ] 2.5 Add adapter integration tests that pass imported snapshots and optional public context through both use cases, checking stale/unavailable disclosures and absence of live player-market liquidity claims.
+- [x] 2.1 Write adapter tests for `src/adapters/import/JsonFarmSnapshotImporter.ts`: valid browser-local JSON import, malformed JSON rejection, unsupported versions, missing analysis fields, and credential-shaped field exclusion from normalized output and diagnostics.
+- [x] 2.2 Implement `src/adapters/import/JsonFarmSnapshotImporter.ts` with schema validation and normalization; it MUST NOT transmit, persist, log, or replay `fs_session`, cookies, private keys, seed phrases, or credential-shaped fields.
+- [x] 2.3 Write adapter tests for `src/adapters/http/FarmingSeasonPublicContextClient.ts` covering valid anonymous payloads, timeout, authentication challenge, invalid payload, stale data, and calculator-only fallback.
+- [x] 2.4 Implement `src/adapters/http/FarmingSeasonPublicContextClient.ts` as an optional, read-only client for verified anonymous RWA/chain context; it MUST attach no game-session credential and MUST disable authentication-requiring sources.
+- [x] 2.5 Add adapter integration tests that pass imported snapshots and optional public context through both use cases, checking stale/unavailable disclosures and absence of live player-market liquidity claims.
 
 ## Phase 3: Responsive PWA and Guidance UI
 

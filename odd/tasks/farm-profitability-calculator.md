@@ -29,7 +29,7 @@ Players need transparent guidance on farm profitability and market prices withou
 ## Tasks
 - [x] FPC-1 — Establish the Vite TypeScript workspace and pure calculation core with tests. Route: delegated; writer trigger (multiple non-trivial files).
 - [x] FPC-1R — Correct reviewed profitability calculation reliability findings before FPC-2. Route: delegated; writer trigger (domain, application, and tests).
-- [ ] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
+- [x] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
 - [ ] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
 
 ## Acceptance Criteria
@@ -43,7 +43,8 @@ Players need transparent guidance on farm profitability and market prices withou
 - 2026-10-30: FPC-1 committed as `cbef738 feat(core): add profitability calculation foundation` and checks passed.
 - 2026-10-30: Native review `review-cf37f71213471fb2` was acknowledged with three informational reliability findings; FPC-1R records their required correction before FPC-2.
 - 2026-10-30: FPC-1R completed; payback, daily-cap handling, and comparable ranking are corrected and regression-tested.
-- Next: implement FPC-2.
+- 2026-10-30: FPC-2 completed with browser-local snapshot normalization and anonymous public-context fallback checks.
+- Next: implement FPC-3.
 
 ## Work Unit Evidence
 
@@ -60,3 +61,9 @@ Players need transparent guidance on farm profitability and market prices withou
 - Type check: `bun run typecheck` — passed.
 - Rollback boundary: `src/domain/profitability/`, `src/application/use-cases/`, and their focused tests.
 - Review assessment: medium risk, under budget (93 authored changed lines from `cbef738`); deferred within the current review slice.
+
+### FPC-2 — Safe data adapters
+- Focused check: `bun run test -- --run src/adapters` — passed (3 files, 8 tests).
+- Full verification: `bun run test` — passed (6 files, 21 tests); `bun run typecheck` and `bun run build` — passed.
+- Runtime harness: mocked anonymous public-context refresh, including timeout, authentication challenge, invalid payload, and stale-context paths.
+- Rollback boundary: `src/adapters/` only.
