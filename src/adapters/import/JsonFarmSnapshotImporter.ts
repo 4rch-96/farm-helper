@@ -6,7 +6,7 @@ import {
 import type { FarmSnapshotImportResult, FarmSnapshotProvider } from '../../application/ports/FarmSnapshotProvider';
 
 const SUPPORTED_VERSION = 2;
-const CREDENTIAL_FIELD = /^(?:fs_session|cookie|cookies|authorization|private[_-]?key|seed[_-]?phrase|mnemonic|secret)$/i;
+const CREDENTIAL_FIELD = /^(?:fs)?session(?:token)?$|^(?:access|auth|refresh|id)?token$|^cookies?$|^authorization$|^privatekey$|^seedphrase$|^mnemonic$|^secret$/i;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -50,7 +50,7 @@ function hasCredentialField(value: unknown): boolean {
     return false;
   }
 
-  return Object.entries(value).some(([key, nested]) => CREDENTIAL_FIELD.test(key) || hasCredentialField(nested));
+  return Object.entries(value).some(([key, nested]) => CREDENTIAL_FIELD.test(key.replace(/[_-]/g, '')) || hasCredentialField(nested));
 }
 
 function normalizeAnimals(value: unknown): AnimalSnapshot[] {

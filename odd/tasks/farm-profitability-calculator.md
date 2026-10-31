@@ -30,6 +30,7 @@ Players need transparent guidance on farm profitability and market prices withou
 - [x] FPC-1 — Establish the Vite TypeScript workspace and pure calculation core with tests. Route: delegated; writer trigger (multiple non-trivial files).
 - [x] FPC-1R — Correct reviewed profitability calculation reliability findings before FPC-2. Route: delegated; writer trigger (domain, application, and tests).
 - [x] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
+- [x] FPC-2R — Correct reviewed adapter reliability findings before FPC-3. Route: delegated; writer trigger (adapter code and tests).
 - [ ] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
 
 ## Acceptance Criteria
@@ -44,6 +45,8 @@ Players need transparent guidance on farm profitability and market prices withou
 - 2026-10-30: Native review `review-cf37f71213471fb2` was acknowledged with three informational reliability findings; FPC-1R records their required correction before FPC-2.
 - 2026-10-30: FPC-1R completed; payback, daily-cap handling, and comparable ranking are corrected and regression-tested.
 - 2026-10-30: FPC-2 completed with browser-local snapshot normalization and anonymous public-context fallback checks.
+- 2026-10-30: Native review `review-6269c0943ee3f5ab` was acknowledged with two informational adapter reliability findings; FPC-2R records their required correction before FPC-3.
+- 2026-10-30: FPC-2R completed; client retrieval time and source update time are distinct, and credential-shaped fields are detected broadly without exposing values.
 - Next: implement FPC-3.
 
 ## Work Unit Evidence
@@ -67,3 +70,10 @@ Players need transparent guidance on farm profitability and market prices withou
 - Full verification: `bun run test` — passed (6 files, 21 tests); `bun run typecheck` and `bun run build` — passed.
 - Runtime harness: mocked anonymous public-context refresh, including timeout, authentication challenge, invalid payload, and stale-context paths.
 - Rollback boundary: `src/adapters/` only.
+- Review receipt: `review-6269c0943ee3f5ab` acknowledged; advisory findings R3-001 and R3-002 are tracked as FPC-2R.
+
+### FPC-2R — Adapter reliability corrections
+- Focused check: `bun run test -- --run src/adapters` — passed (3 files, 12 tests).
+- Type check: `bun run typecheck` — passed.
+- Runtime harness: `bun run build` — passed; Vite production PWA build completed.
+- Rollback boundary: `src/adapters/http/`, `src/adapters/import/`, and their focused tests.

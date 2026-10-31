@@ -50,6 +50,11 @@ Chain strategy: feature-branch-chain
 - [x] 2.4 Implement `src/adapters/http/FarmingSeasonPublicContextClient.ts` as an optional, read-only client for verified anonymous RWA/chain context; it MUST attach no game-session credential and MUST disable authentication-requiring sources.
 - [x] 2.5 Add adapter integration tests that pass imported snapshots and optional public context through both use cases, checking stale/unavailable disclosures and absence of live player-market liquidity claims.
 
+## Review Follow-ups: Adapter Reliability (must complete before Phase 3)
+
+- [x] 2.6 Add regression tests and update `src/adapters/http/FarmingSeasonPublicContextClient.ts` so `retrievedAt` records client retrieval time separately from any source timestamp used for staleness.
+- [x] 2.7 Add regression tests and broaden `src/adapters/import/JsonFarmSnapshotImporter.ts` credential-shaped key detection to cover common variants such as `accessToken`, `sessionToken`, and `auth_token` without exposing their values.
+
 ## Phase 3: Responsive PWA and Guidance UI
 
 - [ ] 3.1 Create `src/presentation/features/calculator/` with a local file/paste import interface, validation feedback, snapshot freshness display, and a clear advisory-only boundary.

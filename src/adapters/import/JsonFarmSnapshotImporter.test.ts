@@ -57,6 +57,15 @@ describe('JsonFarmSnapshotImporter', () => {
     expect(result.warnings.join(' ')).toContain('credential-shaped');
   });
 
+  it.each(['accessToken', 'sessionToken', 'auth_token'])('warns about common credential-shaped field %s without exposing its value', (field) => {
+    const secret = `secret-for-${field}`;
+    const result = new JsonFarmSnapshotImporter().import(JSON.stringify({ ...validGameSnapshot, [field]: secret }));
+
+    expect(result).toMatchObject({ ok: true });
+    expect(JSON.stringify(result)).not.toContain(secret);
+    expect(result.warnings.join(' ')).toContain('credential-shaped');
+  });
+
   it('rejects snapshots missing analysis inputs', () => {
     const result = new JsonFarmSnapshotImporter().import(JSON.stringify({ farm: { version: 2, level: 4, today: { energy: 50 } } }));
 

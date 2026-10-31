@@ -100,7 +100,8 @@ export class FarmingSeasonPublicContextClient implements PublicMarketContextProv
       const sourceTime = parseTimestamp(payload.updatedAt ?? payload.timestamp ?? payload.at, retrieved);
       const context: PublicMarketContext = {
         sourceUrl: this.endpoint,
-        retrievedAt: sourceTime.toISOString(),
+        retrievedAt: retrieved.toISOString(),
+        sourceUpdatedAt: sourceTime.toISOString(),
         freshness: retrieved.getTime() - sourceTime.getTime() > this.freshnessMs ? 'stale' : 'fresh',
         prices,
       };

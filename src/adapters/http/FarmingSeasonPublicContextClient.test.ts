@@ -16,7 +16,12 @@ describe('FarmingSeasonPublicContextClient', () => {
 
     await expect(client.getContext()).resolves.toMatchObject({
       ok: true,
-      context: { freshness: 'fresh', prices: { gold: 42.5, oil: 8 } },
+      context: {
+        freshness: 'fresh',
+        prices: { gold: 42.5, oil: 8 },
+        retrievedAt: '2026-10-30T12:00:00.000Z',
+        sourceUpdatedAt: '2026-10-30T12:00:00.000Z',
+      },
     });
     expect(request?.credentials).toBe('omit');
   });
@@ -41,5 +46,20 @@ describe('FarmingSeasonPublicContextClient', () => {
 
     await expect(stale.getContext()).resolves.toMatchObject({ ok: true, context: { freshness: 'stale' } });
     await expect(timedOut.getContext()).resolves.toMatchObject({ ok: false, message: 'Public context request timed out.' });
+  });
+
+  it('keeps the client retrieval timestamp separate from source freshness', async () => {
+    const client = new FarmingSeasonPublicContextClient({
+      now,
+      fetcher: async () => new Response(JSON.stringify({ prices: { gold: 42.5 }, updatedAt: '2026-10-30T11:55:00.000Z' }), { status: 200 }),
+    });
+
+    await expect(client.getContext()).resolves.toMatchObject({
+      ok: true,
+      context: {
+        retrievedAt: '2026-10-30T12:00:00.000Z',
+        sourceUpdatedAt: '2026-10-30T11:55:00.000Z',
+      },
+    });
   });
 });

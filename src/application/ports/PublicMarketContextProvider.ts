@@ -3,6 +3,7 @@ export type Freshness = 'fresh' | 'stale' | 'unavailable';
 export type PublicMarketContext = Readonly<{
   sourceUrl: string;
   retrievedAt: string;
+  sourceUpdatedAt?: string;
   freshness: Freshness;
   prices: Readonly<Record<string, number>>;
 }>;
