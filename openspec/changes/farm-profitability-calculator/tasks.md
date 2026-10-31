@@ -20,21 +20,21 @@ Chain strategy: feature-branch-chain
 
 | Unit | Goal | Likely PR | Focused test command | Runtime harness | Rollback boundary |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Establish the Vite TypeScript workspace and pure profitability core | PR 1 | `npm run test -- --run src/domain src/application` | `npm run build` | workspace, domain, application, and unit-test files |
-| 2 | Add safe snapshot import and optional public-context adapters | PR 2 | `npm run test -- --run src/adapters` | mocked public-context refresh in a local test | adapters and fixture files |
-| 3 | Deliver the calculator PWA UI and import-to-guidance journey | PR 3 | `npm run test -- --run src/presentation` | `npm run e2e` against the local PWA | presentation and E2E files |
+| 1 | Establish the Vite TypeScript workspace and pure profitability core | PR 1 | `bun run test -- --run src/domain src/application` | `bun run build` | workspace, domain, application, and unit-test files |
+| 2 | Add safe snapshot import and optional public-context adapters | PR 2 | `bun run test -- --run src/adapters` | mocked public-context refresh in a local test | adapters and fixture files |
+| 3 | Deliver the calculator PWA UI and import-to-guidance journey | PR 3 | `bun run test -- --run src/presentation` | `bun run e2e` against the local PWA | presentation and E2E files |
 
 ## Phase 1: Workspace and Calculation Foundation
 
-- [ ] 1.1 Create `package.json`, TypeScript, Vite, PWA, Vitest, Testing Library, and Playwright configuration with `npm run test` as the workspace-wide test command.
-- [ ] 1.2 Create sanitized deterministic fixtures in `src/test/fixtures/` for supported farm snapshots, unsupported versions, malformed snapshots, and public-context payloads; fixtures MUST NOT contain session credentials or wallet-private material.
-- [ ] 1.3 Write RED unit tests for `src/domain/farm/FarmSnapshot.ts` covering supported normalized fields, level constraints, energy, daily caps, inventory, silo, animals, and unavailable inputs.
-- [ ] 1.4 Implement `src/domain/farm/FarmSnapshot.ts` value objects and normalized types so the tests in 1.3 pass.
-- [ ] 1.5 Write RED unit tests for `src/domain/profitability/ProfitabilityPolicy.ts` covering ROI, energy efficiency, payback, documented seller fee net value, missing inputs, and unavailable activities below the Town Hall unlock level.
-- [ ] 1.6 Implement pure profitability and market-baseline policies in `src/domain/profitability/ProfitabilityPolicy.ts`; include no network, React, browser-storage, or game-action dependency.
-- [ ] 1.7 Create `src/application/ports/FarmSnapshotProvider.ts`, `src/application/ports/PublicMarketContextProvider.ts`, and RED tests for the application contracts.
-- [ ] 1.8 Implement `src/application/use-cases/AnalyzeFarmProfitability.ts` and `src/application/use-cases/CreateMarketGuidance.ts` to rank eligible scenarios and return unavailable cases plus disclosures.
-- [ ] 1.9 Refactor the core modules after GREEN while preserving test coverage and ensuring every recommendation retains formula inputs, timeframe, fees, and non-guarantee limitations.
+- [x] 1.1 Create `package.json`, `bun.lock`, TypeScript, Vite, PWA, Vitest, Testing Library, and Playwright configuration with `bun run test` as the workspace-wide test command.
+- [x] 1.2 Create sanitized deterministic fixtures in `src/test/fixtures/` for supported farm snapshots, unsupported versions, malformed snapshots, and public-context payloads; fixtures MUST NOT contain session credentials or wallet-private material.
+- [x] 1.3 Write unit tests for `src/domain/farm/FarmSnapshot.ts` covering supported normalized fields, level constraints, energy, daily caps, inventory, silo, animals, and unavailable inputs.
+- [x] 1.4 Implement `src/domain/farm/FarmSnapshot.ts` value objects and normalized types so the tests in 1.3 pass.
+- [x] 1.5 Write unit tests for `src/domain/profitability/ProfitabilityPolicy.ts` covering ROI, energy efficiency, payback, documented seller fee net value, missing inputs, and unavailable activities below the Town Hall unlock level.
+- [x] 1.6 Implement pure profitability and market-baseline policies in `src/domain/profitability/ProfitabilityPolicy.ts`; include no network, React, browser-storage, or game-action dependency.
+- [x] 1.7 Create `src/application/ports/FarmSnapshotProvider.ts`, `src/application/ports/PublicMarketContextProvider.ts`, and tests for the application contracts.
+- [x] 1.8 Implement `src/application/use-cases/AnalyzeFarmProfitability.ts` and `src/application/use-cases/CreateMarketGuidance.ts` to rank eligible scenarios and return unavailable cases plus disclosures.
+- [x] 1.9 Refactor the core modules after GREEN while preserving test coverage and ensuring every recommendation retains formula inputs, timeframe, fees, and non-guarantee limitations.
 
 ## Phase 2: Safe Data Adapters
 

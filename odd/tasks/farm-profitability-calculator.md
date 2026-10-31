@@ -13,6 +13,7 @@ Players need transparent guidance on farm profitability and market prices withou
 
 ## Constraints
 - Hexagonal architecture, DDD, SOLID.
+- Package manager and script runner: Bun.
 - Feature-branch chain delivery: core → safe adapters → PWA/UI.
 - Strict TDD: false (source: `openspec/config.yaml`; no runner exists yet). Once task 1.1 creates the runner, use ordinary functional checks unless TDD configuration is explicitly changed.
 - Engram mirror: pending; runtime identity is unavailable.
@@ -26,7 +27,7 @@ Players need transparent guidance on farm profitability and market prices withou
 - Slice 3: PWA UI and browser journey.
 
 ## Tasks
-- [ ] FPC-1 — Establish the Vite TypeScript workspace and pure calculation core with tests. Route: delegated; writer trigger (multiple non-trivial files).
+- [x] FPC-1 — Establish the Vite TypeScript workspace and pure calculation core with tests. Route: delegated; writer trigger (multiple non-trivial files).
 - [ ] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
 - [ ] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
 
@@ -39,3 +40,11 @@ Players need transparent guidance on farm profitability and market prices withou
 ## Progress
 - 2026-10-30: Planning artifacts completed under `openspec/changes/farm-profitability-calculator/`.
 - Next: initialize local Git repository and feature-chain branches, then implement FPC-1.
+
+## Work Unit Evidence
+
+### FPC-1 — Workspace and calculation core
+- Focused check: `bun run test -- --run src/domain src/application` — passed (3 files, 10 tests).
+- Runtime harness: `bun run build` — passed; Vite production PWA build completed.
+- Rollback boundary: workspace configuration plus `src/domain/`, `src/application/`, and test fixtures/tests.
+- TDD note: strict TDD is disabled; tests and implementation were completed with functional verification.

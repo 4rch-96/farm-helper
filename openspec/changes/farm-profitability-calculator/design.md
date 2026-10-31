@@ -34,9 +34,42 @@ The codebase will use a feature-oriented hexagonal layout. Domain policies and a
 
 ### Decision: Test stack and runner
 
-**Choice**: Vitest for domain/application unit tests, Testing Library for UI integration tests, and Playwright for a small import-to-recommendation browser journey.
+**Choice**: Bun is the workspace package manager and script runner; Vitest covers domain/application unit tests, Testing Library covers UI integration tests, and Playwright covers a small import-to-recommendation browser journey.
 **Alternatives considered**: browser-only tests; no workspace test runner.
-**Rationale**: The pure calculation engine needs fast deterministic tests, while import validation and disclosure rendering need integration coverage. `npm run test` will become the workspace-wide command, enabling strict TDD after project bootstrap.
+**Rationale**: Bun keeps installation and scripts consistent for this greenfield workspace. The pure calculation engine needs fast deterministic tests, while import validation and disclosure rendering need integration coverage. `bun run test` will become the workspace-wide command, enabling strict TDD after project bootstrap.
+
+### Decision: Original pixel-farm product direction
+
+**Choice**: The calculator SHALL use an original pixel-art interface that evokes a warm on-chain farming world without copying Farming Season artwork, logos, UI layouts, or other protected brand assets.
+**Alternatives considered**: generic SaaS dashboard; direct reuse of game visual assets; a marketing-first NFT landing page.
+**Rationale**: Players should feel at home in a crafted farming-game ecosystem, while the product remains an independent companion and keeps its purpose—making decisions—more important than decoration.
+
+## Visual Direction
+
+### Visual thesis
+
+An original dusk-on-the-farm control room: crisp pixel edges, soil-and-hay neutrals, a single harvest-gold action accent, and small animated field details that make analysis feel like part of a living farm rather than a finance terminal.
+
+### Content plan
+
+1. **Working surface** — the calculator opens on import status, farm freshness, and the highest-value recommendation; it does not use a marketing hero.
+2. **Decision ledger** — rankings show the action, net value, energy efficiency, fee impact, and confidence in a dense but readable pixel table.
+3. **Market context** — sell/hold guidance exposes the price range, liquidity evidence when a manually imported market snapshot exists, and every assumption.
+4. **Detail inspector** — selecting a recommendation reveals the formula, source values, timestamps, missing inputs, and the manual-action boundary.
+
+### Interaction thesis
+
+- A small, staggered pixel-rise entrance introduces the active recommendation and ranking rows after a local import completes.
+- Hover and keyboard focus reveal a compact formula breakdown with a one-step highlight, never hiding essential values behind motion.
+- Freshness and stale states use an understated animated pixel indicator; motion MUST honor `prefers-reduced-motion` and never convey information only through animation or color.
+
+### Implementation guidance
+
+- Use an original low-resolution tile vocabulary—1px/2px stepped borders, sparse dither texture, and CSS/SVG-created utility icons—instead of game screenshots, sprites, logos, or extracted assets.
+- Use a legible system sans-serif for dense data plus an optional open-licensed pixel display face for short headings only; data, formulas, and interactive controls MUST remain readable at normal zoom.
+- Keep the app surface utility-first: a persistent import/status rail, a primary recommendation workspace, and a narrow inspector on large screens. Collapse to a single column with a bottom detail sheet on small screens.
+- Use one semantic harvest-gold accent for primary actions and status emphasis. Pair every color state with text or an icon, meet WCAG contrast requirements, and provide visible keyboard focus.
+- Avoid card mosaics, fake token balances, speculative NFT claims, and decorative motion that obscures rankings. Pixel styling MUST support scanning and decision-making, not compete with it.
 
 ## Data Flow
 
