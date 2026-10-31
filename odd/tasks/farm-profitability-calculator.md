@@ -94,3 +94,4 @@ Players need transparent guidance on farm profitability and market prices withou
 - Browser journey: `bun run e2e` — unavailable/failed because Playwright Chromium is not installed locally. No browser download was attempted.
 - Outbound-path review: only `FarmingSeasonPublicContextClient` may request the verified public RWA endpoint, always with `credentials: 'omit'`; no wallet/session/secret handling, game mutation, or live-listing claim was found.
 - Rollback boundary: `README.md` and verification evidence in task artifacts.
+- Review assessment: medium risk, `under_budget` (300 authored changed lines from `d525a27`); the current UI/documentation slice remains pending within the chain review budget.
