@@ -66,6 +66,6 @@ Chain strategy: feature-branch-chain
 
 ## Phase 4: Verification and Documentation
 
-- [ ] 4.1 Run the workspace test suite, type check, production build, and the browser journey; record any unavailable or skipped check honestly.
-- [ ] 4.2 Add a concise README section explaining local-only snapshot handling, manual game actions, calculation limitations, public-context freshness, and how to clear local data.
-- [ ] 4.3 Review the final UI and outbound HTTP paths to confirm no session credential, wallet secret, game mutation, or unverified live listing claim is present.
+- [x] 4.1 Run the workspace test suite, type check, production build, and the browser journey; record any unavailable or skipped check honestly.
+- [x] 4.2 Add a concise README section explaining local-only snapshot handling, manual game actions, calculation limitations, public-context freshness, and how to clear local data.
+- [x] 4.3 Review the final UI and outbound HTTP paths to confirm no session credential, wallet secret, game mutation, or unverified live listing claim is present.

@@ -32,6 +32,7 @@ Players need transparent guidance on farm profitability and market prices withou
 - [x] FPC-2 — Add secure local snapshot import and public-context adapters with tests. Route: delegated; writer trigger.
 - [x] FPC-2R — Correct reviewed adapter reliability findings before FPC-3. Route: delegated; writer trigger (adapter code and tests).
 - [x] FPC-3 — Deliver PWA calculator UI and end-to-end journey. Route: delegated; writer trigger.
+- [x] FPC-4 — Verify and document local-only operation. Route: delegated; writer trigger (documentation and verification evidence).
 
 ## Acceptance Criteria
 - Recommendations state formulas, fees, timestamps, inputs, and uncertainty.
@@ -48,7 +49,8 @@ Players need transparent guidance on farm profitability and market prices withou
 - 2026-10-30: Native review `review-6269c0943ee3f5ab` was acknowledged with two informational adapter reliability findings; FPC-2R records their required correction before FPC-3.
 - 2026-10-30: FPC-2R completed; client retrieval time and source update time are distinct, and credential-shaped fields are detected broadly without exposing values.
 - 2026-10-30: FPC-3 completed with a local pixel-art calculator workspace, React UI tests, and an authored Playwright journey.
-- Next: run the remaining Phase 4 verification/documentation tasks; Playwright browser binary is not installed and was not downloaded.
+- 2026-10-30: FPC-4 completed. Unit/UI tests, typecheck, and production build pass; E2E is unavailable because Playwright Chromium is not installed and no browser download was authorized.
+- Next: archive the completed change after its final review boundary is reconciled.
 
 ## Work Unit Evidence
 
@@ -86,3 +88,9 @@ Players need transparent guidance on farm profitability and market prices withou
 - Runtime harness: production PWA build completed. `bun run e2e` was attempted but unavailable because the Playwright Chromium binary is not locally installed; no browser download was authorized.
 - Rollback boundary: `src/presentation/`, `src/main.tsx`, `src/vite-env.d.ts`, and `playwright.config.ts`.
 - Review assessment: medium risk, `under_budget` (252 authored changed lines from `d525a27`); review remains pending within the current slice.
+
+### FPC-4 — Verification and documentation
+- Full checks: `bun run test` — passed (7 files, 27 tests); `bun run typecheck` — passed; `bun run build` — passed.
+- Browser journey: `bun run e2e` — unavailable/failed because Playwright Chromium is not installed locally. No browser download was attempted.
+- Outbound-path review: only `FarmingSeasonPublicContextClient` may request the verified public RWA endpoint, always with `credentials: 'omit'`; no wallet/session/secret handling, game mutation, or live-listing claim was found.
+- Rollback boundary: `README.md` and verification evidence in task artifacts.
