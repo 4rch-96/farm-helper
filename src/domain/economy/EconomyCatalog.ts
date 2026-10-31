@@ -10,7 +10,7 @@ export type EconomyActivityCategory =
 
 export type FactSourceKind = 'official-guide' | 'captured-game-ui' | 'approved-community' | 'unknown';
 export type FactConfidence = 'verified' | 'captured' | 'community' | 'unknown';
-export type FactDateKind = 'observed' | 'catalog-review' | 'unknown';
+export type FactDateKind = 'observed' | 'published' | 'catalog-review' | 'unknown';
 
 export type FactSource = Readonly<{
   kind: FactSourceKind;
@@ -88,17 +88,28 @@ const EXPECTED_CONFIDENCE: Readonly<Record<Exclude<FactSourceKind, 'unknown'>, E
   'approved-community': 'community',
 });
 
-export function isCatalogFactUsable(fact: CatalogFact): boolean {
-  const { source } = fact;
+function isFactualSourceDate(value: FactSource['observedAt']): boolean {
+  if (value === 'unknown' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
 
-  return typeof fact.value === 'number'
-    && Number.isFinite(fact.value)
-    && source.kind !== 'unknown'
+  const timestamp = Date.parse(`${value}T00:00:00.000Z`);
+  return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
+}
+
+function hasUsableSource(source: FactSource): boolean {
+  return source.kind !== 'unknown'
     && source.confidence !== 'unknown'
     && source.confidence === EXPECTED_CONFIDENCE[source.kind]
     && source.reference.trim().length > 0
-    && source.observedAt !== 'unknown'
-    && source.dateKind !== 'unknown';
+    && isFactualSourceDate(source.observedAt)
+    && (source.dateKind === 'observed' || source.dateKind === 'published');
+}
+
+export function isCatalogFactUsable(fact: CatalogFact): boolean {
+  return typeof fact.value === 'number'
+    && Number.isFinite(fact.value)
+    && hasUsableSource(fact.source);
 }
 
 export function getActivityFacts(activity: EconomyActivity): ReadonlyArray<CatalogFact> {
@@ -115,9 +126,14 @@ export function getActivityFacts(activity: EconomyActivity): ReadonlyArray<Catal
 
 export function getActivityEvidenceGaps(activity: EconomyActivity): ReadonlyArray<CatalogEvidenceGap> {
   return Object.freeze(
-    getActivityFacts(activity)
-      .filter((fact) => !isCatalogFactUsable(fact))
-      .map((fact) => Object.freeze({ factId: fact.id, factLabel: fact.label, source: fact.source })),
+    [
+      ...getActivityFacts(activity)
+        .filter((fact) => !isCatalogFactUsable(fact))
+        .map((fact) => Object.freeze({ factId: fact.id, factLabel: fact.label, source: fact.source })),
+      ...activity.constraints
+        .filter((constraint) => !hasUsableSource(constraint.source))
+        .map((constraint) => Object.freeze({ factId: constraint.id, factLabel: constraint.label, source: constraint.source })),
+    ],
   );
 }
 

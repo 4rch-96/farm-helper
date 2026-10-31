@@ -12,6 +12,10 @@ Every economic fact used in a calculation must include all of these fields:
 - a date or freshness marker with its meaning; and
 - a confidence state.
 
+For a known fact, the source date must be a valid ISO calendar date and its
+kind must be `observed` or `published`. A `catalog-review` date records only
+the evidence audit and is valid exclusively for an `unknown` fact.
+
 A missing cost, price, yield, duration, energy requirement, fee, multiplier,
 Town Hall unlock, capacity, recipe, building, bait, or sell value is recorded
 as `unknown`. It must not be estimated, backfilled from another activity, or
