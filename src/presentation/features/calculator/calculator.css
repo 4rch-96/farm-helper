@@ -493,3 +493,107 @@ footer {
     transition-duration: 0.01ms !important;
   }
 }
+
+.season-quote {
+  width: min(1320px, calc(100% - 32px));
+  margin: 0 auto 24px;
+  padding: clamp(18px, 2.8vw, 28px);
+  border: 2px solid #557957;
+  border-left: 6px solid #d5a84e;
+  background: #162126;
+  box-shadow: 5px 5px 0 #090e10;
+  animation: season-quote-in 220ms ease-out both;
+}
+.season-quote__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.season-quote h2 {
+  margin: 0;
+  color: #f0f5e7;
+  font-size: clamp(24px, 2.6vw, 36px);
+  letter-spacing: -0.05em;
+}
+.season-quote__freshness,
+.season-quote__status {
+  margin: 0;
+  color: #b8c9b2;
+  font: 700 13px/1.5 Inter, ui-sans-serif, sans-serif;
+}
+.season-quote--stale {
+  border-left-color: #d5a84e;
+}
+.season-quote--unavailable {
+  border-left-color: #93665a;
+}
+.season-quote__price {
+  margin: 18px 0 14px;
+  color: #f2ce63;
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+.season-quote__price span {
+  color: #aab9a4;
+  font: 13px/1.5 Inter, ui-sans-serif, sans-serif;
+  letter-spacing: 0;
+}
+.season-quote__details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.season-quote__details div {
+  min-width: 0;
+  padding: 10px 12px;
+  border-top: 1px solid #395440;
+}
+.season-quote__details dt {
+  color: #93a88d;
+  font-size: 11px;
+}
+.season-quote__details dd {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+  color: #e4ebd9;
+  font: 600 13px/1.45 Inter, ui-sans-serif, sans-serif;
+}
+.season-quote__source,
+.season-quote__limitation {
+  margin: 14px 0 0;
+  color: #b6c4b0;
+  font: 13px/1.55 Inter, ui-sans-serif, sans-serif;
+}
+.season-quote__source a {
+  color: #e7c668;
+  text-underline-offset: 3px;
+}
+.season-quote__limitation {
+  max-width: 850px;
+  border-left: 3px solid #668461;
+  padding-left: 11px;
+}
+
+@keyframes season-quote-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 620px) {
+  .season-quote {
+    width: min(100% - 24px, 1320px);
+  }
+  .season-quote__heading,
+  .season-quote__details {
+    display: block;
+  }
+  .season-quote__freshness {
+    margin-top: 12px;
+  }
+  .season-quote__details div + div {
+    margin-top: 8px;
+  }
+}

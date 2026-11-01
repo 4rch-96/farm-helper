@@ -6,6 +6,7 @@ import {
   type EconomyMatrixRow,
 } from "../../../application/use-cases/BuildEconomyMatrix";
 import type { CatalogFact } from "../../../domain/economy/EconomyCatalog";
+import type { SeasonUsdQuoteProvider } from "../../../application/ports/SeasonUsdQuoteProvider";
 import {
   FARMING_SEASON_TOWN_HALL_RULES,
   type TownHallLevel,
@@ -13,6 +14,7 @@ import {
 import { ActivityDetail } from "./ActivityDetail";
 import { EconomyMatrix } from "./EconomyMatrix";
 import { ProductionChainComparison } from "./ProductionChainComparison";
+import { SeasonUsdQuotePanel } from "./SeasonUsdQuotePanel";
 import "./calculator.css";
 
 const catalogProvider = new FarmingSeasonDocumentationCatalog();
@@ -33,7 +35,11 @@ const UNKNOWN_SELLER_FEE_RATE: CatalogFact = Object.freeze({
   }),
 });
 
-export function CalculatorApp() {
+export type CalculatorAppProps = Readonly<{
+  seasonQuoteProvider?: SeasonUsdQuoteProvider;
+}>;
+
+export function CalculatorApp({ seasonQuoteProvider }: CalculatorAppProps) {
   const [townHallLevel, setTownHallLevel] = useState<TownHallLevel>(1);
   const [sortMetric, setSortMetric] =
     useState<EconomyMatrixSortMetric>("net-per-cycle");
@@ -91,6 +97,8 @@ export function CalculatorApp() {
         </p>
       </section>
 
+      <SeasonUsdQuotePanel provider={seasonQuoteProvider} />
+
       <section
         className="planner-workspace"
         aria-label="Global Town Hall planner"
@@ -117,7 +125,8 @@ export function CalculatorApp() {
         <p>
           Snapshot overlays are optional and are not required to use this
           planner. This view does not use credentials, wallets, sessions, game
-          actions, authenticated polling, or live-market data.
+          actions, or authenticated game polling. The optional public DEX quote
+          is credential-free and never predicts in-game reward conversion.
         </p>
       </section>
 
