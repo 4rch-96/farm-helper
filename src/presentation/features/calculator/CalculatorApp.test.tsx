@@ -32,6 +32,14 @@ function safeCapture(): string {
   });
 }
 
+function captureWithBreadListing(): string {
+  const capture = JSON.parse(safeCapture()) as Record<string, unknown>;
+  return JSON.stringify({
+    ...capture,
+    listings: [{ item: "bread", qty: 1, price: 6 }],
+  });
+}
+
 afterEach(cleanup);
 
 describe("CalculatorApp", () => {
@@ -62,6 +70,24 @@ describe("CalculatorApp", () => {
     expect(screen.getByRole("button", { name: /orders and requests/i })).toBeInTheDocument();
     expect(screen.getByText(/unit-compatible reward/i)).toBeInTheDocument();
     expect(screen.queryByText(/^net benefit$/i)).not.toBeInTheDocument();
+  });
+
+  it("retains every universal recipe evidence gap when a local listing names a recipe", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    fireEvent.change(screen.getByLabelText(/local capture json/i), { target: { value: captureWithBreadListing() } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /processing/i }));
+    fireEvent.click(screen.getByRole("button", { name: /bread/i }));
+
+    for (const gap of [
+      "recipe inputs and quantities",
+      "recipe duration",
+      "recipe energy",
+      "unit-compatible output payout",
+    ]) {
+      expect(screen.getAllByText(gap).length).toBeGreaterThan(0);
+    }
   });
 
   it("loads only a safe projection and renders observed metrics with provenance", () => {
@@ -110,6 +136,18 @@ describe("CalculatorApp", () => {
 
     fireEvent.change(screen.getByLabelText(/town hall level/i), { target: { value: "3" } });
     expect(screen.getByLabelText(/town hall 3 official mechanics/i)).toBeInTheDocument();
+  });
+
+  it("reranks observed alternatives after Town Hall eligibility hides a higher-ranked animal", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    fireEvent.change(screen.getByLabelText(/local capture json/i), { target: { value: safeCapture() } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /animals/i }));
+
+    expect(screen.getByRole("button", { name: /cow.*locked/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chicken.*complete.*rank 1/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /chicken.*rank 2/i })).not.toBeInTheDocument();
   });
 
   it("clears an unrecorded seed-cost draft before replacing a local capture", () => {

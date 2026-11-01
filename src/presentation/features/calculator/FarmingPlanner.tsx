@@ -49,6 +49,13 @@ const RECIPE_LABELS = Object.freeze([
   ["juice", "Juice"],
 ] as const);
 
+const RECIPE_EVIDENCE_GAPS = Object.freeze([
+  "recipe inputs and quantities",
+  "recipe duration",
+  "recipe energy",
+  "unit-compatible output payout",
+]);
+
 function officialEvidence(id: string, label: string, source: FactSource): PlannerEvidence {
   return Object.freeze({ id, label, status: "official", source });
 }
@@ -110,22 +117,35 @@ function animalFallbackRows(): ReadonlyArray<PlannerRow> {
 
 function processingFallbackRows(rows: ReadonlyArray<PlannerRow>): ReadonlyArray<PlannerRow> {
   const byId = new Map(rows.map((row) => [row.id, row]));
-  return RECIPE_LABELS.map(([id, label]) => byId.get(id) ?? Object.freeze({
-    id,
-    label,
-    category: "processing" as const,
-    state: "incomplete" as const,
-    missing: Object.freeze([
-      "recipe inputs and quantities",
-      "recipe duration",
-      "recipe energy",
-      "unit-compatible output payout",
-    ]),
-    evidence: Object.freeze([
-      unknownEvidence(`${id}.recipe`, "Official or observed recipe definition"),
-      unknownEvidence(`${id}.reward`, "Compatible output payout"),
-    ]),
-  }));
+  return RECIPE_LABELS.map(([id, label]) => {
+    const observed = byId.get(id);
+    if (observed !== undefined) return withRecipeEvidenceGaps(observed);
+
+    return Object.freeze({
+      id,
+      label,
+      category: "processing" as const,
+      state: "incomplete" as const,
+      missing: RECIPE_EVIDENCE_GAPS,
+      evidence: Object.freeze([
+        unknownEvidence(`${id}.recipe`, "Official or observed recipe definition"),
+        unknownEvidence(`${id}.energy`, "Recipe energy"),
+        unknownEvidence(`${id}.reward`, "Compatible output payout"),
+      ]),
+    });
+  });
+}
+
+function withRecipeEvidenceGaps(row: PlannerRow): PlannerRow {
+  if (row.state !== "incomplete") return row;
+
+  const missing = Object.freeze([...new Set([...row.missing, ...RECIPE_EVIDENCE_GAPS])]);
+  const evidence = new Map(row.evidence.map((item) => [item.id, item]));
+  if (!evidence.has(`${row.id}.energy`)) {
+    evidence.set(`${row.id}.energy`, unknownEvidence(`${row.id}.energy`, "Recipe energy"));
+  }
+
+  return Object.freeze({ ...row, missing, evidence: Object.freeze([...evidence.values()]) });
 }
 
 function orderFallbackRows(): ReadonlyArray<PlannerRow> {
@@ -185,12 +205,23 @@ function createRows(plan: ObservedProfitabilityPlan | undefined, selectedTownHal
   const animals = plan === undefined ? animalFallbackRows() : byCategory("animals");
   const processing = processingFallbackRows(byCategory("processing"));
 
-  return [
+  const eligibleRows = [
     ...crops,
     ...animals,
     ...processing,
     ...orderFallbackRows(),
   ].map((row) => withTownHallEligibility(row, selectedTownHall));
+
+  const ranked = eligibleRows
+    .filter((row): row is PlannerRow & Readonly<{ state: "complete"; metrics: ObservedProfitabilityMetrics }> =>
+      row.state === "complete" && row.metrics !== undefined)
+    .sort((left, right) => (right.metrics.benefitPerEnergy ?? Number.NEGATIVE_INFINITY)
+      - (left.metrics.benefitPerEnergy ?? Number.NEGATIVE_INFINITY));
+  const rankById = new Map(ranked.map((row, index) => [row.id, index + 1]));
+
+  return eligibleRows.map((row) => row.state === "complete"
+    ? Object.freeze({ ...row, rank: rankById.get(row.id) })
+    : row);
 }
 
 function formatValue(value: number | undefined, suffix = "game-token"): string {
