@@ -59,6 +59,11 @@ describe('buildObservedProfitabilityPlan action context', () => {
       siloDeltas: { wheat: 24 },
       fieldDeltas: { wheat: -24 },
     })]);
-    expect(plan.rows.find((row) => row.activityId === 'wheat')).toBeUndefined();
+    expect(plan.rows.find((row) => row.activityId === 'wheat')).toEqual(expect.objectContaining({
+      state: 'incomplete',
+      category: 'crop',
+      missing: expect.arrayContaining(['direct-game payout for wheat', 'captured seed cost']),
+      rank: undefined,
+    }));
   });
 });

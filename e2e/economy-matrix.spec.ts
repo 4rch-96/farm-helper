@@ -1,16 +1,24 @@
 import { expect, test } from '@playwright/test';
 
-test('inspects documented evidence gaps for a Town Hall activity', async ({ page }) => {
+test('plans documented alternatives without presenting an unranked matrix', async ({ page }) => {
   await page.goto('/');
-  await page.getByLabel('Town Hall level').selectOption('5');
 
-  await expect(page.getByRole('table', { name: 'Global activities at Town Hall 5' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plan with the evidence you have.' })).toBeVisible();
+  await expect(page.getByRole('table')).toHaveCount(0);
+  await expect(page.getByText('Town Hall 6 and 7 are not presented as available.')).toBeVisible();
 
-  const cropActivity = page.getByRole('button', { name: 'Crop activity (evidence pending)' });
-  await expect(cropActivity).toBeVisible();
-  await cropActivity.click();
+  await page.getByRole('tab', { name: /Animals/ }).click();
+  await page.getByRole('button', { name: /Cow/ }).click();
+  await expect(page.getByRole('complementary', { name: 'Cow evidence detail' })).toContainText(
+    'This alternative is not compared at the selected Town Hall level.',
+  );
+  await expect(page.getByText('Town Hall 2 is required by the official guide')).toBeVisible();
 
-  await expect(page.getByRole('heading', { name: 'Crop activity (evidence pending)' })).toBeVisible();
-  await expect(page.getByText('Formula unavailable until every required fact has admissible evidence. This activity is not ranked.')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Named evidence gaps' })).toBeVisible();
+  await page.getByLabel('Town Hall level').selectOption('3');
+  await expect(page.getByLabel('Town Hall 3 official mechanics')).toBeVisible();
+
+  await page.getByRole('tab', { name: /Processing/ }).click();
+  await page.getByRole('button', { name: /Bread/ }).click();
+  await expect(page.getByText('recipe inputs and quantities')).toBeVisible();
+  await expect(page.getByText('unit-compatible output payout')).toBeVisible();
 });

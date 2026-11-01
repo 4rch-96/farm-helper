@@ -1,4 +1,6 @@
-import type { FarmingSeasonGuide, AnimalGuide, EnergyActionGuide } from '../../domain/guide/FarmingSeasonGuide';
+import type { FarmingSeasonGuide, AnimalGuide, CropGuide, EnergyActionGuide } from '../../domain/guide/FarmingSeasonGuide';
+import type { FactSource } from '../../domain/economy/EconomyCatalog';
+import { calculateProfitability } from '../../domain/profitability/ProfitabilityPolicy';
 import type {
   LocalGameCapture,
   ObservedActionObservation,
@@ -7,34 +9,46 @@ import type {
 
 export type ObservedProfitabilityMetrics = Readonly<{
   grossValue: number;
-  feedCost: number;
+  directCost: number;
   feeAmount: number;
-  netPerCycle: number;
-  netPerHour: number;
-  netPerEnergy: number;
+  netBenefit: number;
+  roi: number | undefined;
+  benefitPerHour: number | undefined;
+  benefitPerEnergy: number | undefined;
   cycleHours: number;
   energyPerCycle: number;
 }>;
+
+export type PlannerEvidenceStatus = 'official' | 'observed' | 'unknown';
+
+export type PlannerEvidence = Readonly<{
+  id: string;
+  label: string;
+  status: PlannerEvidenceStatus;
+  source?: FactSource;
+}>;
+
+type PlannerCategory = 'animal' | 'crop' | 'recipe';
 
 export type ObservedProfitabilityRow =
   | Readonly<{
     activityId: string;
     label: string;
-    category: 'animal';
+    category: PlannerCategory;
     state: 'complete';
     observedAt: string;
-    animalCount: number;
-    buildingCount: number;
-    saleRoute: 'direct-game-payout';
+    evidence: ReadonlyArray<PlannerEvidence>;
+    resultStatus: 'derived';
     metrics: ObservedProfitabilityMetrics;
     rank: number | undefined;
   }>
   | Readonly<{
     activityId: string;
     label: string;
-    category: 'animal' | 'crop' | 'recipe';
+    category: PlannerCategory;
     state: 'incomplete';
     missing: ReadonlyArray<string>;
+    evidence: ReadonlyArray<PlannerEvidence>;
     rank: undefined;
   }>;
 
@@ -49,6 +63,7 @@ export type ObservedProfitabilityPlan = Readonly<{
   }>;
   ranking: Readonly<{
     status: 'available' | 'unavailable';
+    metric: 'benefit-per-energy';
     completeActivityCount: number;
   }>;
 }>;
@@ -77,6 +92,11 @@ const BUILDING_KIND_BY_ANIMAL: Readonly<Record<string, string>> = Object.freeze(
 });
 
 const RECIPE_ITEMS = Object.freeze(['flour', 'bread', 'cheese', 'butter', 'jam', 'cloth', 'juice']);
+
+/** Stable local-input key for a player-observed seed purchase; it is not a game price assumption. */
+export function cropSeedCostKey(cropId: string): string {
+  return `${cropId}-seed`;
+}
 
 function energyFor(guide: FarmingSeasonGuide, id: string): EnergyActionGuide | undefined {
   return guide.energyActions.find((action) => action.id === id);
@@ -118,11 +138,33 @@ function observedValueFor(values: Readonly<Record<string, ObservedValue>>, item:
   return values[item.toLowerCase()];
 }
 
+function evidenceStatus(source: FactSource): PlannerEvidenceStatus {
+  if (source.kind === 'official-guide') return 'official';
+  if (source.kind === 'captured-game-ui') return 'observed';
+  return 'unknown';
+}
+
+function sourcedEvidence(id: string, label: string, source: FactSource): PlannerEvidence {
+  return Object.freeze({ id, label, status: evidenceStatus(source), source });
+}
+
+function unknownEvidence(id: string, label: string): PlannerEvidence {
+  return Object.freeze({ id, label, status: 'unknown' });
+}
+
+function tokenUnitGap(values: ReadonlyArray<ObservedValue | undefined>): string | undefined {
+  if (values.some((value) => value === undefined)) return undefined;
+  return values.every((value) => value?.unit === 'game-token')
+    ? undefined
+    : 'compatible in-game token units';
+}
+
 function incomplete(
   activityId: string,
   label: string,
-  category: 'animal' | 'crop' | 'recipe',
+  category: PlannerCategory,
   missing: ReadonlyArray<string>,
+  evidence: ReadonlyArray<PlannerEvidence> = [],
 ): ObservedProfitabilityRow {
   return Object.freeze({
     activityId,
@@ -130,7 +172,37 @@ function incomplete(
     category,
     state: 'incomplete',
     missing: Object.freeze([...missing]),
+    evidence: Object.freeze([
+      ...evidence,
+      ...missing.map((item) => unknownEvidence(`${activityId}.${item}`, item)),
+    ]),
     rank: undefined,
+  });
+}
+
+function metrics(
+  grossValue: number,
+  directCost: number,
+  cycleHours: number,
+  energyPerCycle: number,
+): ObservedProfitabilityMetrics {
+  const calculated = calculateProfitability({
+    grossValue,
+    directCost,
+    durationHours: cycleHours,
+    energyCost: energyPerCycle,
+  });
+
+  return Object.freeze({
+    grossValue: calculated.grossValue,
+    directCost: calculated.totalCost,
+    feeAmount: calculated.feeAmount,
+    netBenefit: calculated.netProfit,
+    roi: calculated.roi,
+    benefitPerHour: calculated.hourlyProfit,
+    benefitPerEnergy: calculated.energyEfficiency,
+    cycleHours,
+    energyPerCycle,
   });
 }
 
@@ -150,12 +222,14 @@ function animalRow(
   const feedCost = observedValueFor(capture.directUnitCosts, 'feed');
   const feedingEnergy = energyFor(guide, 'feed-building');
   const collectionEnergy = energyFor(guide, 'collect-animal-products');
+  const unitGap = tokenUnitGap([payout, feedCost]);
   const missing = [
     ...(buildingCount > 0 ? [] : ['captured building count']),
     ...(payout === undefined ? [`direct-game payout for ${animal.product.toLowerCase()}`] : []),
     ...(feedCost === undefined ? ['captured feed unit cost'] : []),
     ...(feedingEnergy === undefined ? ['official feeding energy rule'] : []),
     ...(collectionEnergy === undefined ? ['official collection energy rule'] : []),
+    ...(unitGap === undefined ? [] : [unitGap]),
   ];
   if (missing.length > 0 || payout === undefined || feedCost === undefined
     || feedingEnergy === undefined || collectionEnergy === undefined) {
@@ -171,38 +245,66 @@ function animalRow(
   const productCollectionDays = cycleHours / 24;
   const productEnergy = buildingCount * productCollectionDays * collectionEnergy.energy.value;
   const energyPerCycle = feedEnergy + productEnergy;
-  const netPerCycle = grossValue - totalFeedCost;
-
   return Object.freeze({
     activityId: animal.id,
     label: animal.label,
     category: 'animal',
     state: 'complete',
     observedAt: payout.capturedAt,
-    animalCount,
-    buildingCount,
-    saleRoute: 'direct-game-payout',
-    metrics: Object.freeze({
-      grossValue,
-      feedCost: totalFeedCost,
-      feeAmount: 0,
-      netPerCycle,
-      netPerHour: netPerCycle / cycleHours,
-      netPerEnergy: energyPerCycle === 0 ? 0 : netPerCycle / energyPerCycle,
-      cycleHours,
-      energyPerCycle,
-    }),
+    evidence: Object.freeze([
+      sourcedEvidence(`${animal.id}.payout`, `${animal.product} payout`, payout.source),
+      sourcedEvidence(`${animal.id}.feed-cost`, 'Feed unit cost', feedCost.source),
+      sourcedEvidence(`${animal.id}.cadence`, 'Product cadence', animal.productCadenceHours.source),
+      sourcedEvidence(`${animal.id}.feed`, 'Feed bags per meal', animal.feedBagsPerMeal.source),
+      sourcedEvidence(`${animal.id}.feed-energy`, 'Feed energy', feedingEnergy.energy.source),
+      sourcedEvidence(`${animal.id}.collection-energy`, 'Collection energy', collectionEnergy.energy.source),
+    ]),
+    resultStatus: 'derived',
+    metrics: metrics(grossValue, totalFeedCost, cycleHours, energyPerCycle),
     rank: undefined,
   });
 }
 
 function cropRows(guide: FarmingSeasonGuide, capture: LocalGameCapture): ReadonlyArray<ObservedProfitabilityRow> {
-  return Object.keys(capture.directPayouts)
-    .filter((item) => guide.crops.some((crop) => crop.id === item))
-    .map((item) => {
-      const crop = guide.crops.find((candidate) => candidate.id === item);
-      return incomplete(item, crop?.label ?? item, 'crop', ['captured seed cost']);
-    });
+  return guide.crops.map((crop) => cropRow(crop, guide, capture));
+}
+
+function cropRow(
+  crop: CropGuide,
+  guide: FarmingSeasonGuide,
+  capture: LocalGameCapture,
+): ObservedProfitabilityRow {
+  const payout = observedValueFor(capture.directPayouts, crop.id);
+  const seedCost = observedValueFor(capture.directUnitCosts, cropSeedCostKey(crop.id));
+  const fieldAction = energyFor(guide, 'plant-or-harvest-field');
+  const unitGap = tokenUnitGap([payout, seedCost]);
+  const missing = [
+    ...(payout === undefined ? [`direct-game payout for ${crop.label.toLowerCase()}`] : []),
+    ...(seedCost === undefined ? ['captured seed cost'] : []),
+    ...(fieldAction === undefined ? ['official plant and harvest energy rule'] : []),
+    ...(unitGap === undefined ? [] : [unitGap]),
+  ];
+  const evidence = [
+    sourcedEvidence(`${crop.id}.duration`, 'Growth duration', crop.growthHours.source),
+    ...(fieldAction === undefined ? [] : [sourcedEvidence(`${crop.id}.energy`, 'Plant and harvest energy', fieldAction.energy.source)]),
+    ...(payout === undefined ? [] : [sourcedEvidence(`${crop.id}.payout`, 'Direct-game payout', payout.source)]),
+    ...(seedCost === undefined ? [] : [sourcedEvidence(`${crop.id}.seed-cost`, 'Seed cost', seedCost.source)]),
+  ];
+  if (missing.length > 0 || payout === undefined || seedCost === undefined || fieldAction === undefined) {
+    return incomplete(crop.id, crop.label, 'crop', missing, evidence);
+  }
+
+  return Object.freeze({
+    activityId: crop.id,
+    label: crop.label,
+    category: 'crop',
+    state: 'complete',
+    observedAt: payout.capturedAt,
+    evidence: Object.freeze(evidence),
+    resultStatus: 'derived',
+    metrics: metrics(payout.value, seedCost.value, crop.growthHours.value, fieldAction.energy.value * 2),
+    rank: undefined,
+  });
 }
 
 function recipeRows(capture: LocalGameCapture): ReadonlyArray<ObservedProfitabilityRow> {
@@ -226,22 +328,19 @@ export function buildObservedProfitabilityPlan(
   capture: LocalGameCapture,
   actionObservations: ReadonlyArray<ObservedActionObservation> = [],
 ): ObservedProfitabilityPlan {
-  const completeAnimals = guide.animals
-    .map((animal) => animalRow(animal, guide, capture))
-    .filter((row): row is Extract<ObservedProfitabilityRow, { state: 'complete' }> => row.state === 'complete')
-    .sort((left, right) => right.metrics.netPerEnergy - left.metrics.netPerEnergy)
-    .map((row, index) => Object.freeze({ ...row, rank: index + 1 }));
-
-  const incompleteAnimals = guide.animals
-    .map((animal) => animalRow(animal, guide, capture))
-    .filter((row): row is Extract<ObservedProfitabilityRow, { state: 'incomplete' }> => row.state === 'incomplete');
-
-  const rows = Object.freeze([
-    ...completeAnimals,
-    ...incompleteAnimals,
+  const evaluatedRows = [
+    ...guide.animals.map((animal) => animalRow(animal, guide, capture)),
     ...cropRows(guide, capture),
     ...recipeRows(capture),
-  ]);
+  ];
+  const completeRows = evaluatedRows
+    .filter((row): row is Extract<ObservedProfitabilityRow, { state: 'complete' }> => row.state === 'complete')
+    .sort((left, right) => (right.metrics.benefitPerEnergy ?? Number.NEGATIVE_INFINITY)
+      - (left.metrics.benefitPerEnergy ?? Number.NEGATIVE_INFINITY))
+    .map((row, index) => Object.freeze({ ...row, rank: index + 1 }));
+  const incompleteRows = evaluatedRows
+    .filter((row): row is Extract<ObservedProfitabilityRow, { state: 'incomplete' }> => row.state === 'incomplete');
+  const rows = Object.freeze([...completeRows, ...incompleteRows]);
 
   return Object.freeze({
     capturedAt: capture.farm.capturedAt,
@@ -253,8 +352,9 @@ export function buildObservedProfitabilityPlan(
       farmBankSellerFeeRate: guide.farmBank.sellerFeeRate.value,
     }),
     ranking: Object.freeze({
-      status: completeAnimals.length >= 2 ? 'available' : 'unavailable',
-      completeActivityCount: completeAnimals.length,
+      status: completeRows.length >= 2 ? 'available' : 'unavailable',
+      metric: 'benefit-per-energy',
+      completeActivityCount: completeRows.length,
     }),
   });
 }

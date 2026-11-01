@@ -1,7 +1,11 @@
 import type { FactSource } from '../economy/EconomyCatalog';
 
+/** Retained unit prevents the planner from combining receipts with unvalidated values. */
+export type ObservedValueUnit = 'game-token' | 'unknown';
+
 export type ObservedValue = Readonly<{
   value: number;
+  unit: ObservedValueUnit;
   source: FactSource;
   capturedAt: string;
 }>;
@@ -72,6 +76,7 @@ function freezeObservedValues(
   return Object.freeze(Object.fromEntries(
     Object.entries(values).map(([key, value]) => [key, Object.freeze({
       value: assertFiniteNonNegative(value.value, `${label} ${key}`),
+      unit: value.unit === 'game-token' ? 'game-token' : 'unknown',
       source: value.source,
       capturedAt: assertIsoTimestamp(value.capturedAt, `${label} ${key} capture time`),
     })]),
