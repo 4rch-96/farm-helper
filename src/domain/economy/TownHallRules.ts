@@ -68,7 +68,12 @@ function evidenceGap(fact: CatalogFact): CatalogEvidenceGap {
 }
 
 function asRequiredLevel(fact: CatalogFact): TownHallLevel | undefined {
-  if (typeof fact.value !== 'number' || !isCatalogFactUsable(fact) || !Number.isInteger(fact.value) || fact.value < 1 || fact.value > 5) {
+  if (fact.unit !== 'Town Hall level'
+    || typeof fact.value !== 'number'
+    || !isCatalogFactUsable(fact)
+    || !Number.isInteger(fact.value)
+    || fact.value < 1
+    || fact.value > 5) {
     return undefined;
   }
 
@@ -115,18 +120,24 @@ export function getTownHallRule(rules: TownHallRules, level: number): TownHallRu
 
 export function getTownHallValueMultiplier(rules: TownHallRules, level: number): TownHallMultiplierResult {
   const fact = getTownHallRule(rules, level).valueMultiplier;
-  if (typeof fact.value !== 'number' || !isCatalogFactUsable(fact) || fact.value < 0) {
+  if (fact.unit !== 'multiplier' || typeof fact.value !== 'number' || !isCatalogFactUsable(fact) || fact.value < 0) {
     return Object.freeze({ ok: false, missingFacts: Object.freeze([evidenceGap(fact)]) });
   }
 
   return Object.freeze({ ok: true, value: fact.value, fact, missingFacts: Object.freeze([]) });
 }
 
+function isUsableTownHallCapacity(fact: CatalogFact): boolean {
+  return fact.unit === 'items'
+    && typeof fact.value === 'number'
+    && Number.isInteger(fact.value)
+    && fact.value >= 0
+    && isCatalogFactUsable(fact);
+}
+
 export function getTownHallCapacities(rules: TownHallRules, level: number): TownHallCapacityResult {
   const capacities = getTownHallRule(rules, level).capacities;
-  const usable = capacities.filter((capacity) => typeof capacity.value.value === 'number'
-    && capacity.value.value >= 0
-    && isCatalogFactUsable(capacity.value));
+  const usable = capacities.filter((capacity) => isUsableTownHallCapacity(capacity.value));
 
   return Object.freeze({
     capacities: Object.freeze(usable.map((capacity) => Object.freeze({

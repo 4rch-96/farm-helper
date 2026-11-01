@@ -48,6 +48,19 @@ describe('Town Hall rules', () => {
     expect(evaluateTownHallActivityEligibility(3, unlock)).toMatchObject({ state: 'eligible', requiredLevel: 3 });
   });
 
+  it('treats a source-backed unlock with a non-level unit as a named evidence gap', () => {
+    const wrongUnitUnlock = fact('activity.unlock', 'Synthetic activity unlock', 3, 'items');
+
+    expect(evaluateTownHallActivityEligibility(3, wrongUnitUnlock)).toEqual({
+      state: 'incomplete',
+      missingFacts: [{
+        factId: 'activity.unlock',
+        factLabel: 'Synthetic activity unlock',
+        source: syntheticVerifiedFixtureSource,
+      }],
+    });
+  });
+
   it('keeps unknown unlocks and multipliers as named evidence gaps instead of defaulting values', () => {
     const knownRules = rules();
     const unknownRules = createTownHallRules(knownRules.levels.map((rule) => rule.level === 2
@@ -66,6 +79,23 @@ describe('Town Hall rules', () => {
         factId: 'town-hall.2.multiplier',
         factLabel: 'Town Hall 2 value multiplier',
         source: unknownFixtureFact.source,
+      }],
+    });
+  });
+
+  it('treats a source-backed multiplier with a non-multiplier unit as a named evidence gap', () => {
+    const knownRules = rules();
+    const wrongUnitRules = createTownHallRules(knownRules.levels.map((rule) => rule.level === 2
+      ? { ...rule, valueMultiplier: fact('town-hall.2.multiplier', 'Town Hall 2 value multiplier', 1, 'items') }
+      : rule,
+    ));
+
+    expect(getTownHallValueMultiplier(wrongUnitRules, 2)).toEqual({
+      ok: false,
+      missingFacts: [{
+        factId: 'town-hall.2.multiplier',
+        factLabel: 'Town Hall 2 value multiplier',
+        source: syntheticVerifiedFixtureSource,
       }],
     });
   });
@@ -90,6 +120,32 @@ describe('Town Hall rules', () => {
         { id: 'animal-4', label: 'Synthetic animal capacity', value: 4, fact: fact('animal-4', 'Synthetic animal capacity', 4) },
       ],
       missingFacts: [],
+    });
+  });
+
+  it('treats fractional capacity counts as a named evidence gap', () => {
+    const knownRules = rules();
+    const fractionalCapacityRules = createTownHallRules(knownRules.levels.map((rule) => rule.level === 1
+      ? {
+        ...rule,
+        capacities: [{
+          ...rule.capacities[0],
+          value: fact('field-1', 'Synthetic field capacity', 1.5, 'items'),
+        }, ...rule.capacities.slice(1)],
+      }
+      : rule,
+    ));
+
+    expect(getTownHallCapacities(fractionalCapacityRules, 1)).toMatchObject({
+      capacities: [
+        { id: 'building-1', value: 1 },
+        { id: 'animal-1', value: 1 },
+      ],
+      missingFacts: [{
+        factId: 'field-1',
+        factLabel: 'Synthetic field capacity',
+        source: syntheticVerifiedFixtureSource,
+      }],
     });
   });
 });
