@@ -12,10 +12,12 @@ type LocalGameCaptureImportResult =
   | Readonly<{ ok: true; capture: LocalGameCapture; warnings: ReadonlyArray<string> }>
   | Readonly<{ ok: false; message: string; warnings: ReadonlyArray<string> }>;
 
-const CREDENTIAL_FIELD = /^(?:fs)?session(?:token)?$|^(?:access|auth|refresh|id)?token$|^cookies?$|^authorization$|^privatekey$|^seedphrase$|^mnemonic$|^secret$/i;
+const CREDENTIAL_FIELD = /^(?:fs)?session(?:token)?$|^(?:access|auth|refresh|id)?token$|^cookies?$|^authorization$|^privatekey$|^seedphrase$|^mnemonic$|^secret$|^wallet(?:address)?$/i;
 const DIRECT_PAYOUT = /^Collected ([a-z][a-z ]*) \(\+([\d.]+) SEASON\)$/i;
 const CROP_PAYOUT = /^Field \d+: harvested ([a-z][a-z ]+) \(\+([\d.]+) SEASON\)$/i;
 const FEED_PURCHASE = /^Market: bought (\d+) feed bag(?:s)? from .+ \(−([\d.]+) SEASON\)$/i;
+const PRIVATE_REQUEST_FIELD = /^(?:(?:private|request|source|endpoint|api))?(?:curl|url|uri)$/i;
+const PRIVATE_REQUEST_TEXT = /^(?:curl\s+|https?:\/\/)/i;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -27,6 +29,16 @@ function hasCredentialField(value: unknown): boolean {
 
   return Object.entries(value).some(([key, nested]) =>
     CREDENTIAL_FIELD.test(key.replace(/[_-]/g, '')) || hasCredentialField(nested));
+}
+
+/** Reject request material instead of merely omitting it from the projection. */
+function hasPrivateRequestInput(value: unknown): boolean {
+  if (typeof value === 'string') return PRIVATE_REQUEST_TEXT.test(value.trim());
+  if (Array.isArray(value)) return value.some(hasPrivateRequestInput);
+  if (!isRecord(value)) return false;
+
+  return Object.entries(value).some(([key, nested]) =>
+    PRIVATE_REQUEST_FIELD.test(key.replace(/[_-]/g, '')) || hasPrivateRequestInput(nested));
 }
 
 function numberAt(value: unknown, label: string): number {
@@ -182,9 +194,22 @@ export class JsonLocalGameCaptureImporter {
       return Object.freeze({ ok: false, message: 'The capture is not valid JSON.', warnings: Object.freeze([]) });
     }
 
-    const warnings = hasCredentialField(parsed)
-      ? ['Credential-shaped fields were discarded. Revoke them before sharing a capture.']
-      : [];
+    if (hasCredentialField(parsed)) {
+      return Object.freeze({
+        ok: false,
+        message: 'Credential-shaped input is not accepted for local planning.',
+        warnings: Object.freeze([]),
+      });
+    }
+    if (hasPrivateRequestInput(parsed)) {
+      return Object.freeze({
+        ok: false,
+        message: 'Private URL- or cURL-shaped input is not accepted for local planning.',
+        warnings: Object.freeze([]),
+      });
+    }
+
+    const warnings: ReadonlyArray<string> = Object.freeze([]);
 
     try {
       const root = recordAt(parsed, 'Capture');

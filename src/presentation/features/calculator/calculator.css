@@ -597,3 +597,126 @@ footer {
     margin-top: 8px;
   }
 }
+
+.planner-local-data,
+.planner-observed-context {
+  width: min(1320px, calc(100% - 32px));
+  margin-inline: auto;
+  margin-top: 24px;
+}
+
+.planner-local-data {
+  display: grid;
+  gap: 14px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 2px solid #557957;
+  background: #162126;
+  box-shadow: 5px 5px 0 #090e10;
+}
+
+.planner-local-data h2 {
+  margin: 0;
+  color: #f0f5e7;
+  font-size: clamp(22px, 2.4vw, 34px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.planner-local-data p,
+.planner-local-data label,
+.planner-local-data legend {
+  color: #b6c4b0;
+  font: 14px/1.55 Inter, ui-sans-serif, sans-serif;
+}
+
+.planner-local-data p {
+  max-width: 72ch;
+  margin: 8px 0 0;
+}
+
+.planner-local-data > label,
+.planner-local-data fieldset label {
+  display: grid;
+  gap: 7px;
+  color: #d3e0c8;
+  font-weight: 700;
+}
+
+.planner-local-data textarea,
+.planner-local-data input,
+.planner-local-data select {
+  width: 100%;
+  min-height: 42px;
+  border: 2px solid #668461;
+  color: #e9f3de;
+  background: #0d1518;
+  padding: 9px;
+  font: 14px/1.45 Inter, ui-sans-serif, sans-serif;
+}
+
+.planner-local-data textarea {
+  min-height: 126px;
+  resize: vertical;
+}
+
+.planner-local-data button {
+  justify-self: start;
+  min-height: 42px;
+  border: 2px solid #b8df82;
+  color: #10171b;
+  background: #b8df82;
+  padding: 0 16px;
+  font-weight: 800;
+}
+
+.planner-local-data button:hover:not(:disabled) {
+  background: #f2ce63;
+  border-color: #f2ce63;
+}
+
+.planner-local-data fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  border: 1px dashed #6e9c65;
+  padding: 14px;
+}
+
+.planner-local-data fieldset button {
+  align-self: end;
+}
+
+.planner-local-data fieldset:disabled {
+  opacity: 0.55;
+}
+
+.planner-local-data__status,
+.planner-local-data__summary {
+  border-left: 3px solid #d5a84e;
+  padding-left: 10px;
+  color: #e4ebd9 !important;
+}
+
+.planner-local-data__privacy {
+  color: #aab9a4 !important;
+}
+
+.planner-observed-context {
+  border-left: 3px solid #b8df82;
+  padding: 12px 16px;
+  color: #dbe9ce;
+  background: #162126;
+  font: 14px/1.55 Inter, ui-sans-serif, sans-serif;
+}
+
+@media (max-width: 620px) {
+  .planner-local-data,
+  .planner-observed-context {
+    width: min(100% - 24px, 1320px);
+  }
+
+  .planner-local-data fieldset {
+    grid-template-columns: 1fr;
+  }
+}

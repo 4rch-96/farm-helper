@@ -3,11 +3,10 @@ import { JsonLocalGameCaptureImporter } from './JsonLocalGameCaptureImporter';
 
 const CAPTURE_TIME = 1_793_491_200_000;
 
-function samplePayload(): Record<string, unknown> {
+function safePayload(): Record<string, unknown> {
   return {
-    owner: 'private-wallet-address',
-    fs_session: 'must-not-survive-import',
     now: CAPTURE_TIME,
+    owner: 'private-wallet-address',
     farm: {
       version: 2,
       owner: 'private-wallet-address',
@@ -18,10 +17,7 @@ function samplePayload(): Record<string, unknown> {
         ...Array.from({ length: 6 }, (_, index) => ({ id: `private-chicken-${index}`, kind: 'chicken' })),
         ...Array.from({ length: 3 }, (_, index) => ({ id: `private-cow-${index}`, kind: 'cow' })),
       ],
-      structures: [
-        { id: 'private-coop', kind: 'coop' },
-        { id: 'private-barn', kind: 'barn' },
-      ],
+      structures: [{ id: 'private-coop', kind: 'coop' }, { id: 'private-barn', kind: 'barn' }],
       log: [
         { text: 'Collected egg (+27 SEASON)' },
         { text: 'Collected egg (+27 SEASON)' },
@@ -41,13 +37,13 @@ function samplePayload(): Record<string, unknown> {
 }
 
 describe('JsonLocalGameCaptureImporter', () => {
-  it('projects only source-backed planning facts and discards private capture fields', () => {
-    const result = new JsonLocalGameCaptureImporter().import(JSON.stringify(samplePayload()));
+  it('projects only source-backed planning facts and strips non-credential personal fields', () => {
+    const result = new JsonLocalGameCaptureImporter().import(JSON.stringify(safePayload()));
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    expect(result.warnings).toEqual(['Credential-shaped fields were discarded. Revoke them before sharing a capture.']);
+    expect(result.warnings).toEqual([]);
     expect(result.capture.farm).toEqual(expect.objectContaining({
       capturedAt: new Date(CAPTURE_TIME).toISOString(),
       townHallLevel: 4,
@@ -69,10 +65,51 @@ describe('JsonLocalGameCaptureImporter', () => {
 
     const persistedProjection = JSON.stringify(result.capture);
     expect(persistedProjection).not.toContain('private-wallet-address');
-    expect(persistedProjection).not.toContain('must-not-survive-import');
     expect(persistedProjection).not.toContain('private-farm-name');
+    expect(persistedProjection).not.toContain('private-chicken');
     expect(persistedProjection).not.toContain('private-seller');
     expect(persistedProjection).not.toContain('Private note');
+  });
+
+  it('rejects credential- and wallet-shaped input without returning a projection', () => {
+    const raw = JSON.stringify({
+      ...safePayload(),
+      fs_session: 'must-not-survive-import',
+      wallet: 'private-wallet-address',
+    });
+    const result = new JsonLocalGameCaptureImporter().import(raw);
+
+    expect(result).toEqual({
+      ok: false,
+      message: 'Credential-shaped input is not accepted for local planning.',
+      warnings: [],
+    });
+    expect(JSON.stringify(result)).not.toContain('must-not-survive-import');
+    expect(JSON.stringify(result)).not.toContain('private-wallet-address');
+  });
+
+  it('rejects private URL and cURL material without returning a projection', () => {
+    const privateUrl = new JsonLocalGameCaptureImporter().import(JSON.stringify({
+      ...safePayload(),
+      requestUrl: 'https://private.example.invalid/capture',
+    }));
+    const privateCurl = new JsonLocalGameCaptureImporter().import(JSON.stringify({
+      ...safePayload(),
+      farm: { ...safePayload().farm as Record<string, unknown>, debug: { curl: 'curl -H Authorization: secret' } },
+    }));
+
+    expect(privateUrl).toEqual({
+      ok: false,
+      message: 'Private URL- or cURL-shaped input is not accepted for local planning.',
+      warnings: [],
+    });
+    expect(privateCurl).toEqual({
+      ok: false,
+      message: 'Private URL- or cURL-shaped input is not accepted for local planning.',
+      warnings: [],
+    });
+    expect(JSON.stringify(privateUrl)).not.toContain('private.example.invalid');
+    expect(JSON.stringify(privateCurl)).not.toContain('Authorization: secret');
   });
 
   it('rejects malformed captures without leaking the raw input', () => {

@@ -8,10 +8,34 @@ const unavailableQuoteProvider = {
   getQuote: async () => ({ ok: false as const, message: "Quote unavailable in this test." }),
 };
 
+const CAPTURE_TIME = 1_793_491_200_000;
+
+function safeCapture(): string {
+  return JSON.stringify({
+    now: CAPTURE_TIME,
+    farm: {
+      version: 2,
+      level: 4,
+      today: { energy: 100 },
+      animals: [
+        ...Array.from({ length: 6 }, () => ({ kind: "chicken" })),
+        ...Array.from({ length: 3 }, () => ({ kind: "cow" })),
+      ],
+      structures: [{ kind: "coop" }, { kind: "barn" }],
+      log: [
+        { text: "Collected egg (+27 SEASON)" },
+        { text: "Collected milk (+109 SEASON)" },
+        { text: "Field 2: harvested radish (+10 SEASON)" },
+        { text: "Market: bought 20 feed bags from Any Player (−40 SEASON)" },
+      ],
+    },
+  });
+}
+
 afterEach(cleanup);
 
 describe("CalculatorApp", () => {
-  it("renders the global planner without a mandatory JSON import", () => {
+  it("renders the global planner without requiring a local capture", () => {
     render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
     expect(
@@ -20,15 +44,48 @@ describe("CalculatorApp", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/town hall level/i)).toHaveValue("1");
-    expect(
-      screen.getByText(/optional local snapshot overlay/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByLabelText(/paste snapshot json/i),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /analyze snapshot/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/local capture json/i)).toHaveValue("");
+    expect(screen.getByRole("button", { name: /analyze local capture/i })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /observed crop seed cost/i })).toBeDisabled();
+  });
+
+  it("loads only a safe projection, clears the source text, and records dated crop-cost evidence", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    const captureInput = screen.getByLabelText(/local capture json/i);
+    fireEvent.change(captureInput, { target: { value: safeCapture() } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+
+    expect(captureInput).toHaveValue("");
+    expect(screen.getByText(/observed data loaded from 2026-11-01/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/observed local planning context/i)).toHaveTextContent(/2 complete alternatives/i);
+    expect(screen.getByRole("group", { name: /observed crop seed cost/i })).not.toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText(/^crop$/i), { target: { value: "radish" } });
+    fireEvent.change(screen.getByLabelText(/seed cost \(observed game-token unit\)/i), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText(/observation date/i), { target: { value: "2026-11-01" } });
+    fireEvent.click(screen.getByRole("button", { name: /record observed seed cost/i }));
+
+    expect(screen.getByText(/observed seed cost saved for radish/i)).toBeInTheDocument();
+    expect(screen.getByTestId("observed-plan-summary")).toHaveTextContent(/3 complete alternatives/i);
+    expect(screen.getByText(/never predicts an in-game reward/i)).toBeInTheDocument();
+  });
+
+  it("clears and rejects credential-shaped input without exposing it", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    const raw = JSON.stringify({
+      ...JSON.parse(safeCapture()),
+      cookies: "private-cookie",
+    });
+    const captureInput = screen.getByLabelText(/local capture json/i);
+    fireEvent.change(captureInput, { target: { value: raw } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+
+    expect(captureInput).toHaveValue("");
+    expect(screen.getByText(/credential-shaped input is not accepted/i)).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("private-cookie");
+    expect(screen.queryByLabelText(/observed local planning context/i)).not.toBeInTheDocument();
   });
 
   it("wires the global selectors while retaining named incomplete evidence", () => {

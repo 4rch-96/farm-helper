@@ -14,6 +14,8 @@ import {
 import { ActivityDetail } from "./ActivityDetail";
 import { EconomyMatrix } from "./EconomyMatrix";
 import { ProductionChainComparison } from "./ProductionChainComparison";
+import { ObservedPlannerDataSetup } from "./ObservedPlannerDataSetup";
+import type { ObservedProfitabilityPlan } from "../../../application/use-cases/BuildObservedProfitabilityPlan";
 import { SeasonUsdQuotePanel } from "./SeasonUsdQuotePanel";
 import "./calculator.css";
 
@@ -44,6 +46,7 @@ export function CalculatorApp({ seasonQuoteProvider }: CalculatorAppProps) {
   const [sortMetric, setSortMetric] =
     useState<EconomyMatrixSortMetric>("net-per-cycle");
   const [selectedActivityId, setSelectedActivityId] = useState<string>();
+  const [observedPlan, setObservedPlan] = useState<ObservedProfitabilityPlan>();
 
   const matrix = useMemo(
     () =>
@@ -98,6 +101,16 @@ export function CalculatorApp({ seasonQuoteProvider }: CalculatorAppProps) {
       </section>
 
       <SeasonUsdQuotePanel provider={seasonQuoteProvider} />
+
+      <ObservedPlannerDataSetup onPlanChange={setObservedPlan} />
+
+      {observedPlan !== undefined && (
+        <aside className="planner-observed-context" aria-label="Observed local planning context">
+          <strong>Observed local plan active.</strong>{" "}
+          {observedPlan.ranking.completeActivityCount} complete alternative{observedPlan.ranking.completeActivityCount === 1 ? "" : "s"};
+          ranking is {observedPlan.ranking.status}.
+        </aside>
+      )}
 
       <section
         className="planner-workspace"
