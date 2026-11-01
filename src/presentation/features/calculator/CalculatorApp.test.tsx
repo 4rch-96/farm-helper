@@ -71,6 +71,28 @@ describe("CalculatorApp", () => {
     expect(screen.getByText(/never predicts an in-game reward/i)).toBeInTheDocument();
   });
 
+  it("clears an unrecorded seed-cost draft before replacing a local capture", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    const captureInput = screen.getByLabelText(/local capture json/i);
+    fireEvent.change(captureInput, { target: { value: safeCapture() } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+
+    fireEvent.change(screen.getByLabelText(/^crop$/i), { target: { value: "pumpkin" } });
+    fireEvent.change(screen.getByLabelText(/seed cost \(observed game-token unit\)/i), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText(/observation date/i), { target: { value: "2026-11-01" } });
+
+    fireEvent.change(captureInput, { target: { value: safeCapture() } });
+    fireEvent.click(screen.getByRole("button", { name: /analyze local capture/i }));
+
+    expect(screen.getByLabelText(/^crop$/i)).toHaveValue("radish");
+    expect(screen.getByLabelText(/seed cost \(observed game-token unit\)/i)).toHaveValue(null);
+    expect(screen.getByLabelText(/observation date/i)).toHaveValue("");
+    fireEvent.click(screen.getByRole("button", { name: /record observed seed cost/i }));
+    expect(screen.getByText(/observed seed cost must be a non-negative number/i)).toBeInTheDocument();
+    expect(screen.getByTestId("observed-plan-summary")).toHaveTextContent(/2 complete alternatives/i);
+  });
+
   it("clears and rejects credential-shaped input without exposing it", () => {
     render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 

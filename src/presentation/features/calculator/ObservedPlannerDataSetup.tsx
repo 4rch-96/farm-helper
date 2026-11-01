@@ -77,6 +77,9 @@ export function ObservedPlannerDataSetup({ onPlanChange }: ObservedPlannerDataSe
   const importCapture = () => {
     const result = captureImporter.import(rawCapture);
     setRawCapture("");
+    setSeedCost("");
+    setObservedDate("");
+    setSelectedCropId(guide.crops[0]?.id ?? "");
 
     if (!result.ok) {
       setCapture(undefined);
@@ -101,7 +104,7 @@ export function ObservedPlannerDataSetup({ onPlanChange }: ObservedPlannerDataSe
     }
 
     const value = Number(seedCost);
-    if (!Number.isFinite(value) || value < 0) {
+    if (seedCost.trim() === "" || !Number.isFinite(value) || value < 0) {
       setMessage("Observed seed cost must be a non-negative number.");
       return;
     }
