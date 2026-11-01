@@ -41,7 +41,7 @@ The visible `FarmingSeasonDocumentationCatalog` deliberately supplies unknown ec
 ## Delivery
 - **Forecast:** approximately 850 authored changed lines across application calculations, import/UI integration, presentation, tests, and documentation.
 - **Strategy:** `single-pr`.
-- **Maintainer delivery direction:** one feature branch with separate, reviewable work-unit commits and one final PR to `main`; this is the maintainer-approved exception to the ~400-line PR forecast. The required `size:exception` PR label remains pending until an exact PR number exists and the maintainer directs that protected-label action.
+- **Maintainer delivery direction:** one feature branch with separate, reviewable work-unit commits and one final PR to `main`; this is the maintainer-approved exception to the ~400-line PR forecast. PR [#10](https://github.com/4rch-96/farm-helper/pull/10) targets `main` with the required `type:feature` label. The single protected-label attempt for `size:exception` received an authoritative GitHub rejection and read-back confirms that label is absent; no retry was made.
 - **Running authored lines:** 2,278 additions plus deletions through `697a1f0`; this intentionally exceeds the review-budget heuristic under the maintainer-selected single-PR exception.
 - **RDD:** enabled by global configuration; assess each work-unit commit against the current reviewed boundary using the native command.
 - **Engram mirror:** pending because this runtime has no registered memory session identity; local document is authoritative until it can be mirrored safely.
@@ -61,4 +61,4 @@ The visible `FarmingSeasonDocumentationCatalog` deliberately supplies unknown ec
 - 2026-11-01: completed P7-4 documentation and final local checks; only Playwright browser availability remains externally blocked.
 
 ## Next Step
-Push the feature branch and create the approved single PR to `main`; report the unavailable browser check explicitly.
+Monitor PR #10's automated checks. The browser scenario remains unavailable only because this environment lacks the Playwright Chromium executable; all required local test, typecheck, build, and diff checks passed.
