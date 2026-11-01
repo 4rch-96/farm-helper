@@ -4,11 +4,15 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach } from "vitest";
 import { CalculatorApp } from "./CalculatorApp";
 
+const unavailableQuoteProvider = {
+  getQuote: async () => ({ ok: false as const, message: "Quote unavailable in this test." }),
+};
+
 afterEach(cleanup);
 
 describe("CalculatorApp", () => {
   it("renders the global planner without a mandatory JSON import", () => {
-    render(<CalculatorApp />);
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
     expect(
       screen.getByRole("heading", {
@@ -28,7 +32,7 @@ describe("CalculatorApp", () => {
   });
 
   it("wires the global selectors while retaining named incomplete evidence", () => {
-    render(<CalculatorApp />);
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
     fireEvent.change(screen.getByLabelText(/town hall level/i), {
       target: { value: "3" },
@@ -54,12 +58,12 @@ describe("CalculatorApp", () => {
     ).not.toBeNull();
   });
 
-  it("requires no credential, wallet, session, game action, or live-market data", () => {
-    render(<CalculatorApp />);
+  it("requires no credential, wallet, session, game action, or authenticated game polling", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
     expect(
       screen.getByText(
-        /does not use credentials, wallets, sessions, game actions, authenticated polling, or live-market data/i,
+        /does not use credentials, wallets, sessions, game actions, or authenticated game polling/i,
       ),
     ).toBeInTheDocument();
     const buttonNames = screen
