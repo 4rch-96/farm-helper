@@ -1,7 +1,7 @@
 # Phase 7 — Evidence-Based Farming Season Planner
 
 - **Issue:** #9 — `feat: Phase 7 evidence-based Farming Season planner`
-- **Branch:** `codex/phase-7-evidence-planner`
+- **Branch:** `feat/phase-7-evidence-planner`
 - **Base:** `main` at `d6fe37f`
 - **Status:** planned; no functional code written
 
