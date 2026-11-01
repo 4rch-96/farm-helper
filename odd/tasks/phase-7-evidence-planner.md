@@ -42,7 +42,7 @@ The visible `FarmingSeasonDocumentationCatalog` deliberately supplies unknown ec
 - **Forecast:** approximately 850 authored changed lines across application calculations, import/UI integration, presentation, tests, and documentation.
 - **Strategy:** `single-pr`.
 - **Maintainer delivery direction:** one feature branch with separate, reviewable work-unit commits and one final PR to `main`; this is the maintainer-approved exception to the ~400-line PR forecast. The required `size:exception` PR label remains pending until an exact PR number exists and the maintainer directs that protected-label action.
-- **Running authored lines:** 0.
+- **Running authored lines:** 2,278 additions plus deletions through `697a1f0`; this intentionally exceeds the review-budget heuristic under the maintainer-selected single-PR exception.
 - **RDD:** enabled by global configuration; assess each work-unit commit against the current reviewed boundary using the native command.
 - **Engram mirror:** pending because this runtime has no registered memory session identity; local document is authoritative until it can be mirrored safely.
 
