@@ -1,59 +1,72 @@
-# Field Ledger
+# Farm Helper
 
-A browser-local, advisory profitability companion for Farming Season. Its global Town Hall planner compares only what the current evidence-aware catalog can support; missing facts remain visible instead of becoming estimates or recommendations.
+Farm Helper is a browser-local, evidence-aware Farming Season planning tool. It helps a player compare crops, animals, processing, and orders **only** when the inputs are sourced, dated, and compatible. It never automates the game or turns missing data into a recommendation.
 
-## Run locally
+## Quick path
 
 ```bash
 bun install
 bun run dev
 ```
 
-Open the app and select a Town Hall level from 1 through 5. The planner can be used without an account, an imported farm snapshot, or market data.
+1. Choose an officially documented Town Hall level (1–5).
+2. Inspect a category on the decision board. A complete option shows its result and evidence; every other option names what is still needed.
+3. Optionally analyze a safe, player-provided local capture and record a dated observed seed cost to unlock only the calculations that evidence supports.
 
-## Catalog provenance and confidence
+## Read the decision board
 
-The current catalog is `farming-season-documentation-catalog-2026-10-31`, reviewed on `2026-10-31`. It contains evidence-pending placeholders for crop, animal, feed, processing, mine, oil, and fishing activities; it does **not** claim verified Farming Season economic values.
+| State | Meaning | Ranking |
+| --- | --- | --- |
+| **Complete** | Official mechanics and compatible observed game-token values are present. | Eligible; ranked by benefit per energy among visible eligible alternatives. |
+| **Evidence pending** | One or more values, units, recipes, or rewards are missing. | Never ranked or recommended. |
+| **Locked** | The selected Town Hall does not meet a documented unlock. | Never ranked or recommended. |
 
-Every catalog fact records its value (or `unknown`), unit, source kind, source reference, source date and date kind, and confidence. A numeric fact is eligible for a complete calculation only when it has an admissible source:
+For a complete crop or animal alternative, the board shows:
 
-- `official-guide` with `verified` confidence and a published or observed date;
-- `captured-game-ui` with `captured` confidence and an observed date; or
-- `approved-community` with `community` confidence and a published or observed date.
+- **Net benefit** = observed gross value − observed direct cost
+- **ROI** = net benefit ÷ direct cost
+- **Benefit / energy** = net benefit ÷ energy used in the cycle
+- **Benefit / hour** = net benefit ÷ cycle duration
 
-An `unknown` source or confidence is an evidence gap, not a value. In particular, the current catalog has no admissible activity economics, Town Hall capacities or value multipliers, or seller-fee rate. The planner names these gaps and does not turn them into a profitability ranking.
+Each detail view labels its inputs and result as **Official**, **Observed**, **Derived**, or **Unknown**, and shows the source reference, date, and confidence whenever a source exists.
 
-## Town Hall planner
+## What the planner can and cannot compare
 
-The global planner supports Town Hall levels 1–5 and lets you select the declared ranking metric. Each activity is shown as one of these states:
+- **Crops:** require an observed direct-game payout and a dated observed seed cost, together with the official growth and energy mechanics.
+- **Animals:** require an observed farm count, building count, product payout, and feed cost, together with official cadence, feed, and energy mechanics.
+- **Animal storage and processing:** remain evidence-pending until the destination, recipe, duration, energy, and compatible payout are sourced.
+- **Recipes:** bread, cheese, butter, jam, and other transformations remain evidence-pending until their inputs, quantities, duration, energy, and output payout are evidenced.
+- **Orders:** remain evidence-pending until their requested inputs, time, energy, and reward are evidenced.
 
-- **Complete:** every required fact has admissible evidence; only these activities can receive a rank.
-- **Incomplete:** one or more facts lack admissible evidence; the detail view names the gaps and reports that the formula is unavailable.
-- **Locked:** the selected Town Hall level does not meet a documented unlock requirement.
+The official guide currently documents Town Hall levels 1–5. Farm Helper does not present Town Hall 6 or 7 as available.
 
-Rows are ordered by the selected metric, but incomplete and locked activities are never ranked. Select an activity to inspect its source evidence and planning limits. This behavior is intentional: absence of evidence must remain visible instead of being replaced with invented economics.
+## Local evidence and privacy
 
-## Optional overlays
+A local capture is optional. Its source JSON is processed in memory and cleared after every analysis attempt; the app retains only a narrow planning projection. It does not retain raw captures, account names, wallet data, cookies, sessions, credentials, private URLs/cURLs, or authentication tokens.
 
-A local farm snapshot and public-market context are optional future overlays. They do not gate Town Hall planning and cannot supply undocumented prices, recipes, fees, or production facts. Any overlay must remain local, source-aware, and explicitly limited; it is not a live-market feed.
+Credential-, wallet-, and private request-shaped input is rejected before a projection is created. Personal metadata that is not needed for a calculation is omitted from the projection.
 
-## Safety, privacy, and boundaries
+Observed balance and cost values are represented as a neutral **game-token** unit. A capture format may contain a token ticker, but that does not authorize Farm Helper to predict a game payout conversion or a wallet-token amount.
 
-- The planner does not require or use credentials, wallet keys, seed phrases, cookies, login sessions, or `fs_session` values.
-- Field Ledger does not plant, harvest, feed, buy, sell, list, or otherwise act in Farming Season. All game actions remain manual.
-- The global planner uses the local documentation catalog and does not make HTTP requests. A legacy public-context adapter, when used outside the planner, sends anonymous requests with browser credentials omitted and rejects authenticated sources.
-- The app has no authenticated polling or live-market dependency. A missing optional overlay must never prevent planner use.
+## Market boundary
 
-## No-guarantee disclaimer
+The optional public SEASON/USD panel is credential-free market context. It can value a **known** SEASON amount in USD, but it never determines how many in-game tokens an activity pays. The planner does not combine that quote with game rewards, reward-pool share, or undocumented prices.
 
-Field Ledger is advisory only. It does not provide financial advice, game guarantees, verified returns, or a promise that an activity is profitable. Confirm current in-game facts and your own constraints before acting; every displayed result is limited by the evidence, freshness, assumptions, caps, and gaps shown by the planner.
+## Sources and limits
 
-## Checks
+- Official mechanics: [Farming Season player guide](https://farmingseason.io/docs), reviewed 2026-11-01.
+- The guide supports Town Hall, energy, crop timing, animal cadence/feed, feed conversion, capacity, and documented market-fee mechanics.
+- It does not publish current crop/animal prices or payouts, workshop recipes, recipe rewards, or individual order rewards. Those facts stay unavailable until compatible evidence is supplied.
+
+Farm Helper is advisory only, not financial advice or a promise of game earnings. Confirm current in-game conditions before acting.
+
+## Verification
 
 ```bash
 bun run test
 bun run typecheck
 bun run build
+git diff --check
 ```
 
-`bun run e2e` requires a locally installed Playwright browser. The project intentionally does not download one.
+The browser scenario is available through `bun run e2e`. It requires a locally installed Playwright browser; in an environment without that browser executable, Playwright reports the missing binary instead of running the scenario.

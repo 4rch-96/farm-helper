@@ -1,60 +1,59 @@
-# Economy Evidence Policy
+# Economy evidence policy
 
-The economy catalog is an advisory data source. It never triggers a Farming
-Season action, connects a wallet, stores credentials, opens a game session, or
-polls an authenticated endpoint.
+Farm Helper calculates a decision only when its inputs are traceable and unit-compatible. Missing evidence is a visible planning limit, never an estimate, default price, or implied reward.
 
-## Admission rule
+## Decision rule
 
-Every economic fact used in a calculation must include all of these fields:
+A fact used in a complete calculation needs all of the following:
 
-- a source kind and a stable source reference;
-- a date or freshness marker with its meaning; and
-- a confidence state.
+1. a source kind and stable reference;
+2. an observed or published date with its meaning; and
+3. a confidence state and compatible unit.
 
-For a known fact, the source date must be a valid ISO calendar date and its
-kind must be `observed` or `published`. A `catalog-review` date records only
-the evidence audit and is valid exclusively for an `unknown` fact.
+The planner labels evidence and results as follows:
 
-A missing cost, price, yield, duration, energy requirement, fee, multiplier,
-Town Hall unlock, capacity, recipe, building, bait, or sell value is recorded
-as `unknown`. It must not be estimated, backfilled from another activity, or
-used to rank an activity as economically complete.
+| Label | Meaning |
+| --- | --- |
+| **Official** | A published Farming Season guide fact with verified provenance. |
+| **Observed** | A dated value projected from a player-provided safe local capture or a dated local observation. |
+| **Derived** | A formula result computed only from official and observed compatible inputs. |
+| **Unknown** | Evidence is absent, incompatible, or not admissible. The option cannot be ranked. |
 
-## Allowed source kinds
+## Admissible sources
 
-| Source kind | When it is admissible | Confidence | Required reference and date |
+| Source kind | Use | Confidence | Required context |
 | --- | --- | --- | --- |
-| `official-guide` | A stable official Farming Season guide explicitly states the fact. | `verified` | URL or document identifier, quoted location, and the document's observed or updated date. |
-| `captured-game-ui` | A reproducible capture of the relevant game screen shows the fact. | `captured` | Capture identifier or stored artifact path, screen/context description, and capture date. |
-| `approved-community` | A source has passed the project's community-source review before use. | `community` | Canonical post/dataset reference, review record, and the observed or published date. |
-| `unknown` | No admissible source is available for the fact. | `unknown` | A reference that says no admissible evidence is recorded; the date is `unknown` or an explicitly labelled catalog-review date. |
+| `official-guide` | Static game mechanics explicitly published by Farming Season. | `verified` | URL, named guide section, and review date. |
+| `captured-game-ui` | A narrow planning value extracted from a player-provided local capture. | `captured` | Observation date and action or screen context. |
+| `approved-community` | A source accepted through the project review process. | `community` | Canonical reference, review record, and factual date. |
+| `unknown` | No compatible source exists. | `unknown` | Explicit evidence-gap label only. |
 
-A catalog-review date means only that the repository was checked for evidence
-on that date. It is **not** an observation of the game, a claim that the game
-value was current, or a substitute for source provenance.
+A catalog-review date records the repository audit; it is not an observation of the game and cannot make an unknown fact calculable.
 
-## Current catalog state
+## Local-capture boundary
 
-At the initial review on 2026-10-31, this repository contains no admissible
-local official guide, captured UI artifact, approved community dataset, or
-source reference for Farming Season economic constants. The static catalog
-therefore uses only unknown placeholders for crop, animal, feed, processing,
-mine, oil, and fishing economics. Existing illustrative UI numbers are not
-catalog evidence and must remain outside catalog calculations until supported
-by an admitted source.
+The importer parses only in memory and returns a minimal projection for planning. It rejects credential-shaped, wallet-shaped, and private URL/cURL-shaped input before returning a projection. It omits account names, IDs, seller names, free-form logs, and raw source JSON.
 
-## Adding a fact
+The projection uses `game-token` or `unknown` as its value unit. It intentionally does not claim that an observed game balance delta has a particular wallet-token ticker or reward-conversion basis.
 
-1. Store or reference the evidence in a durable, reviewable location.
-2. Record its source kind, reference, factual date/freshness, and matching
-   confidence state on the catalog fact.
-3. State the unit and the exact activity context; do not generalize a fact to
-   another item, Town Hall level, or recipe without evidence.
-4. Add tests that prove the new fact retains its provenance and that missing
-   related facts still produce evidence gaps.
-5. Keep the calculator advisory-only: users perform any game action manually.
+A dated crop seed-cost observation is local evidence for that crop only. It must not be generalized to another crop, farm, Town Hall level, recipe, or date.
 
-Community evidence stays unavailable until a reviewer records its approval.
-When evidence is removed, contradicted, or stale, revert the affected fact to
-`unknown` rather than retaining an unsupported economic recommendation.
+## Complete calculation gates
+
+| Alternative | Required evidence before calculation and ranking |
+| --- | --- |
+| Crop | Observed direct-game payout, dated observed seed cost, compatible game-token units, official growth duration, and official plant/harvest energy. |
+| Animal | Captured animal and building counts, observed product payout, observed feed cost, compatible game-token units, official cadence/feed, and official feeding/collection energy. |
+| Processing recipe | Inputs and quantities, duration, energy, output payout, and compatible units. |
+| Order | Requested inputs and quantities, duration, energy, reward, and compatible units. |
+
+Public market asks remain excluded until their price unit is independently validated. A SEASON/USD quote is never a substitute for a game reward amount or reward-pool share.
+
+## Adding evidence safely
+
+1. Keep only the smallest durable reference or safe projection needed for planning.
+2. Record the source kind, factual date, confidence, unit, and exact activity context.
+3. Add a test that preserves provenance and proves missing or incompatible evidence remains unranked.
+4. Keep every game action manual and do not add authenticated game polling.
+
+When a source is removed, contradicted, stale, or unit-incompatible, revert the affected calculation to evidence-pending rather than retaining a recommendation.
