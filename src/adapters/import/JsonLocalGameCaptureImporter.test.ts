@@ -56,6 +56,7 @@ describe('JsonLocalGameCaptureImporter', () => {
       buildingCounts: { coop: 1, barn: 1 },
     }));
     expect(result.capture.directPayouts.egg.value).toBe(27);
+    expect(result.capture.directPayouts.egg.unit).toBe('game-token');
     expect(result.capture.directPayouts.milk.value).toBe(109);
     expect(result.capture.directPayouts.chili.value).toBe(18);
     expect(result.capture.directUnitCosts.feed.value).toBe(2);

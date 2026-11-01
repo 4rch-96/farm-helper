@@ -83,7 +83,7 @@ function median(values: ReadonlyArray<number>): number {
 }
 
 function observedValue(value: number, capturedAt: string, location: string): ObservedValue {
-  return Object.freeze({ value, capturedAt, source: observedSource(capturedAt, location) });
+  return Object.freeze({ value, unit: 'game-token', capturedAt, source: observedSource(capturedAt, location) });
 }
 
 function parseObservedValues(log: unknown, capturedAt: string): Readonly<{
