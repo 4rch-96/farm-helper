@@ -38,8 +38,8 @@ Chain strategy: feature-branch-chain
 
 - [x] 2.1 Write tests for `src/domain/economy/TownHallRules.ts` covering levels 1–5, invalid levels, documented unlocks, field/building/animal capacity, and verified value multipliers.
 - [x] 2.2 Implement `src/domain/economy/TownHallRules.ts` as data-driven validation and eligibility/capacity logic; it MUST expose unknown multiplier gaps instead of applying a default.
-- [ ] 2.3 Write tests for `src/domain/economy/EconomyCalculator.ts` covering direct costs, feed/input opportunity cost, energy, fees, net per cycle/hour/energy, break-even price, caps, and incomplete facts.
-- [ ] 2.4 Implement `src/domain/economy/EconomyCalculator.ts` so incomplete data yields an incomplete result with named evidence gaps and no definitive rank.
+- [x] 2.3 Write tests for `src/domain/economy/EconomyCalculator.ts` covering direct costs, feed/input opportunity cost, energy, fees, net per cycle/hour/energy, break-even price, caps, and incomplete facts.
+- [x] 2.4 Implement `src/domain/economy/EconomyCalculator.ts` so incomplete data yields an incomplete result with named evidence gaps and no definitive rank.
 - [ ] 2.5 Create `src/application/ports/EconomyCatalogProvider.ts`, then write tests for `src/application/use-cases/BuildEconomyMatrix.ts` covering level filtering, complete/incomplete/locked rows, declared sorting metric, and no-snapshot operation.
 - [ ] 2.6 Implement `src/application/use-cases/BuildEconomyMatrix.ts` and retain the existing snapshot and market providers as optional overlays only.
 - [ ] 2.7 Run focused domain/application tests and verify a Town Hall 1–5 fixture produces no invented values.
