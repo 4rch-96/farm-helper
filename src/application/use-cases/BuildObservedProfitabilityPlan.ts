@@ -1,5 +1,9 @@
 import type { FarmingSeasonGuide, AnimalGuide, EnergyActionGuide } from '../../domain/guide/FarmingSeasonGuide';
-import type { LocalGameCapture, ObservedValue } from '../../domain/observations/LocalGameCapture';
+import type {
+  LocalGameCapture,
+  ObservedActionObservation,
+  ObservedValue,
+} from '../../domain/observations/LocalGameCapture';
 
 export type ObservedProfitabilityMetrics = Readonly<{
   grossValue: number;
@@ -37,6 +41,7 @@ export type ObservedProfitabilityRow =
 export type ObservedProfitabilityPlan = Readonly<{
   capturedAt: string;
   rows: ReadonlyArray<ObservedProfitabilityRow>;
+  actionObservations: ReadonlyArray<ObservedActionPlanContext>;
   marketPriceUnitState: 'unavailable' | 'unit-validation-pending';
   feeContext: Readonly<{
     playerMarketSellerFeeRate: number;
@@ -46,6 +51,22 @@ export type ObservedProfitabilityPlan = Readonly<{
     status: 'available' | 'unavailable';
     completeActivityCount: number;
   }>;
+}>;
+
+export type ObservedActionPlanContext = Readonly<{
+  kind: ObservedActionObservation['kind'];
+  scope: 'batch';
+  item: string;
+  quantity: number;
+  observedAt: string;
+  energyDelta: number;
+  tokenDelta: number;
+  siloDeltas: Readonly<Record<string, number>>;
+  fieldDeltas: Readonly<Record<string, number>>;
+  source: ObservedActionObservation['source'];
+  documentedEnergy: number | undefined;
+  observedEnergySpent: number | undefined;
+  energyComparison: 'matches' | 'differs' | 'not-comparable';
 }>;
 
 const BUILDING_KIND_BY_ANIMAL: Readonly<Record<string, string>> = Object.freeze({
@@ -59,6 +80,38 @@ const RECIPE_ITEMS = Object.freeze(['flour', 'bread', 'cheese', 'butter', 'jam',
 
 function energyFor(guide: FarmingSeasonGuide, id: string): EnergyActionGuide | undefined {
   return guide.energyActions.find((action) => action.id === id);
+}
+
+function actionContext(
+  guide: FarmingSeasonGuide,
+  observation: ObservedActionObservation,
+): ObservedActionPlanContext {
+  const documentedRule = energyFor(guide, 'plant-or-harvest-field');
+  const documentedEnergy = documentedRule === undefined
+    ? undefined
+    : documentedRule.energy.value * observation.quantity;
+  const observedEnergySpent = observation.energyDelta <= 0
+    ? -observation.energyDelta
+    : undefined;
+  const energyComparison = documentedEnergy === undefined || observedEnergySpent === undefined
+    ? 'not-comparable'
+    : documentedEnergy === observedEnergySpent ? 'matches' : 'differs';
+
+  return Object.freeze({
+    kind: observation.kind,
+    scope: observation.scope,
+    item: observation.item,
+    quantity: observation.quantity,
+    observedAt: observation.observedAt,
+    energyDelta: observation.energyDelta,
+    tokenDelta: observation.tokenDelta,
+    siloDeltas: observation.siloDeltas,
+    fieldDeltas: observation.fieldDeltas,
+    source: observation.source,
+    documentedEnergy,
+    observedEnergySpent,
+    energyComparison,
+  });
 }
 
 function observedValueFor(values: Readonly<Record<string, ObservedValue>>, item: string): ObservedValue | undefined {
@@ -171,6 +224,7 @@ function recipeRows(capture: LocalGameCapture): ReadonlyArray<ObservedProfitabil
 export function buildObservedProfitabilityPlan(
   guide: FarmingSeasonGuide,
   capture: LocalGameCapture,
+  actionObservations: ReadonlyArray<ObservedActionObservation> = [],
 ): ObservedProfitabilityPlan {
   const completeAnimals = guide.animals
     .map((animal) => animalRow(animal, guide, capture))
@@ -192,6 +246,7 @@ export function buildObservedProfitabilityPlan(
   return Object.freeze({
     capturedAt: capture.farm.capturedAt,
     rows,
+    actionObservations: Object.freeze(actionObservations.map((observation) => actionContext(guide, observation))),
     marketPriceUnitState: capture.market?.priceUnitState ?? 'unavailable',
     feeContext: Object.freeze({
       playerMarketSellerFeeRate: guide.playerMarket.sellerFeeRate.value,
