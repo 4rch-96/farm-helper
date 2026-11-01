@@ -35,21 +35,36 @@ function safeCapture(): string {
 afterEach(cleanup);
 
 describe("CalculatorApp", () => {
-  it("renders the global planner without requiring a local capture", () => {
+  it("renders an accessible, table-free planner without requiring a local capture", () => {
     render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
-    expect(
-      screen.getByRole("heading", {
-        name: /compare what the catalog can support/i,
-      }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /make the next farm decision with proof/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /plan with the evidence you have/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/town hall level/i)).toHaveValue("1");
+    expect(screen.getByRole("tablist", { name: /planner categories/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /crops/i })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByText(/town hall 6 and 7 are not presented as available/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/local capture json/i)).toHaveValue("");
-    expect(screen.getByRole("button", { name: /analyze local capture/i })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: /observed crop seed cost/i })).toBeDisabled();
   });
 
-  it("loads only a safe projection, clears the source text, and records dated crop-cost evidence", () => {
+  it("shows recipe and order alternatives as evidence-pending instead of fabricated calculations", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /processing/i }));
+    expect(screen.getByRole("tabpanel", { name: /processing/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /bread/i })).toBeInTheDocument();
+    expect(screen.getByText(/recipe inputs and quantities/i)).toBeInTheDocument();
+    expect(screen.getByText(/unit-compatible output payout/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /orders/i }));
+    expect(screen.getByRole("button", { name: /orders and requests/i })).toBeInTheDocument();
+    expect(screen.getByText(/unit-compatible reward/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^net benefit$/i)).not.toBeInTheDocument();
+  });
+
+  it("loads only a safe projection and renders observed metrics with provenance", () => {
     render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
 
     const captureInput = screen.getByLabelText(/local capture json/i);
@@ -58,17 +73,43 @@ describe("CalculatorApp", () => {
 
     expect(captureInput).toHaveValue("");
     expect(screen.getByText(/observed data loaded from 2026-11-01/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/observed local planning context/i)).toHaveTextContent(/2 complete alternatives/i);
+    expect(screen.getByTestId("observed-plan-summary")).toHaveTextContent(/2 complete alternatives/i);
     expect(screen.getByRole("group", { name: /observed crop seed cost/i })).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole("tab", { name: /animals/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chicken/i }));
+    expect(screen.getByRole("complementary", { name: /chicken decision detail/i })).toBeInTheDocument();
+    expect(screen.getByText(/^net benefit$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^roi$/i)).toBeInTheDocument();
+    expect(screen.getByText(/derived from compatible official mechanics and observed game-token data/i)).toBeInTheDocument();
+    expect(screen.getByText(/storage and processing stay evidence-pending/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Official").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Observed").length).toBeGreaterThan(0);
 
     fireEvent.change(screen.getByLabelText(/^crop$/i), { target: { value: "radish" } });
     fireEvent.change(screen.getByLabelText(/seed cost \(observed game-token unit\)/i), { target: { value: "3" } });
     fireEvent.change(screen.getByLabelText(/observation date/i), { target: { value: "2026-11-01" } });
     fireEvent.click(screen.getByRole("button", { name: /record observed seed cost/i }));
+    fireEvent.click(screen.getByRole("tab", { name: /crops/i }));
 
-    expect(screen.getByText(/observed seed cost saved for radish/i)).toBeInTheDocument();
-    expect(screen.getByTestId("observed-plan-summary")).toHaveTextContent(/3 complete alternatives/i);
-    expect(screen.getByText(/never predicts an in-game reward/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /radish.*complete/i })).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: /radish decision detail/i })).toBeInTheDocument();
+    expect(screen.getByText(/net benefit = observed gross value/i)).toBeInTheDocument();
+    expect(screen.getByText(/public season\/usd panel is market context only/i)).toBeInTheDocument();
+  });
+
+  it("locks a documented animal at a lower selected Town Hall instead of recommending it", () => {
+    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /animals/i }));
+    fireEvent.click(screen.getByRole("button", { name: /cow/i }));
+
+    expect(screen.getByRole("complementary", { name: /cow evidence detail/i })).toHaveTextContent(/not compared at the selected town hall/i);
+    expect(screen.getByText(/town hall 2 is required by the official guide/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^net benefit$/i)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/town hall level/i), { target: { value: "3" } });
+    expect(screen.getByLabelText(/town hall 3 official mechanics/i)).toBeInTheDocument();
   });
 
   it("clears an unrecorded seed-cost draft before replacing a local capture", () => {
@@ -107,34 +148,6 @@ describe("CalculatorApp", () => {
     expect(captureInput).toHaveValue("");
     expect(screen.getByText(/credential-shaped input is not accepted/i)).toBeInTheDocument();
     expect(document.body.textContent).not.toContain("private-cookie");
-    expect(screen.queryByLabelText(/observed local planning context/i)).not.toBeInTheDocument();
-  });
-
-  it("wires the global selectors while retaining named incomplete evidence", () => {
-    render(<CalculatorApp seasonQuoteProvider={unavailableQuoteProvider} />);
-
-    fireEvent.change(screen.getByLabelText(/town hall level/i), {
-      target: { value: "3" },
-    });
-    fireEvent.change(screen.getByLabelText(/sort metric/i), {
-      target: { value: "net-per-energy" },
-    });
-
-    expect(
-      screen.getByRole("table", { name: /global activities at town hall 3/i }),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText("Net per energy").length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(/formula unavailable until every required fact/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /ranking unavailable: fewer than two complete eligible activities/i,
-      ),
-    ).toBeInTheDocument();
-    expect(
-      document.querySelector('[data-responsive-summary="true"]'),
-    ).not.toBeNull();
   });
 
   it("requires no credential, wallet, session, game action, or authenticated game polling", () => {
